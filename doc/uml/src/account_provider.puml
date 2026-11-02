@@ -1,0 +1,341 @@
+@startuml account_provider
+title Account Provider Storage and Model Management
+top to bottom direction
+skinparam classAttributeIconSize 0
+skinparam shadowing false
+skinparam packageStyle rectangle
+hide empty members
+
+package "account.proto (Protobuf messages)" as proto {
+  enum Provider {
+    PROVIDER_UNSPECIFIED = 0
+    PROVIDER_OPENAI = 1
+    PROVIDER_ANTHROPIC = 2
+    PROVIDER_GOOGLE_GEMINI = 3
+    PROVIDER_CUSTOM = 4
+  }
+
+  enum ApiProtocol {
+    API_PROTOCOL_UNSPECIFIED = 0
+    API_PROTOCOL_OPENAI_CHAT_COMPLETIONS = 1
+    API_PROTOCOL_OPENAI_RESPONSES = 2
+    API_PROTOCOL_ANTHROPIC_MESSAGES = 3
+    API_PROTOCOL_GEMINI_GENERATE_CONTENT = 4
+    API_PROTOCOL_GEMINI_INTERACTIONS = 5
+  }
+
+  enum Modality {
+    MODALITY_UNSPECIFIED = 0
+    MODALITY_TEXT = 1
+    MODALITY_IMAGE = 2
+    MODALITY_AUDIO = 3
+    MODALITY_VIDEO = 4
+  }
+
+  class AgentAccountHolder <<message>> {
+    + accounts : repeated AgentAccount
+    + default_model : ModelReference
+  }
+
+  class ModelReference <<message>> {
+    + account_id : string
+    + model_id : string
+  }
+
+  class AgentAccount <<message>> {
+    + id : string
+    + display_name : string
+    + provider : Provider
+    + api_protocol : ApiProtocol
+    + base_url : string
+    + auth : Authentication
+    + extra_headers : map<string, string>
+    + models : repeated ModelDescriptor
+    + disabled : bool
+  }
+
+  class Authentication <<message>> {
+    .. oneof method ..
+    + header : HeaderAuthentication
+    + no_auth : NoAuthentication
+  }
+
+  class HeaderAuthentication <<message>> {
+    + header_name : string
+    + value_prefix : string
+    + credential : CredentialReference
+  }
+
+  class NoAuthentication <<message>>
+
+  class CredentialReference <<message>> {
+    .. oneof source ..
+    + keyring_id : string
+    + environment_variable : string
+  }
+
+  class ModelDescriptor <<message>> {
+    + id : string
+    + display_name : string
+    + token_limits : TokenLimits
+    + input_modalities : repeated Modality
+    + output_modalities : repeated Modality
+    + capabilities : ModelCapabilities
+    + pricing : ModelPricing
+    + disabled : bool
+    + uuid : string
+  }
+
+  class TokenLimits <<message>> {
+    + context_window_tokens : uint64
+    + max_input_tokens : uint64
+    + max_output_tokens : uint64
+    + max_output_tokens_override : uint64
+  }
+
+  class ModelCapabilities <<message>> {
+    + tool_calling : optional bool
+    + streaming : optional bool
+    + structured_output : optional bool
+    + reasoning : optional bool
+    + parallel_tool_calls : optional bool
+    + prompt_caching : optional bool
+    + image_generation : optional bool
+    + image_editing : optional bool
+  }
+
+  class ModelPricing <<message>> {
+    + currency : string
+    + input_per_million_tokens : optional double
+    + output_per_million_tokens : optional double
+    + cached_input_per_million_tokens : optional double
+  }
+}
+
+package "account_service.proto (gRPC service, generated base class)" as rpc {
+  class "AccountService::Service" as AccountServiceBase <<gRPC>> {
+    + CreateAccount(CreateAccountRequest) : AgentAccount
+    + GetAccount(GetAccountRequest) : AgentAccount
+    + ListAccounts(ListAccountsRequest) : ListAccountsResponse
+    + UpdateAccount(UpdateAccountRequest) : AgentAccount
+    + DeleteAccount(DeleteAccountRequest) : google.protobuf.Empty
+    + DetectModels(DetectModelsRequest) : DetectModelsResponse
+    + AddModel(AddModelRequest) : ModelDescriptor
+    + UpdateModel(UpdateModelRequest) : ModelDescriptor
+    + DeleteModel(DeleteModelRequest) : google.protobuf.Empty
+    + SearchModels(SearchModelsRequest) : SearchModelsResponse
+    + GetModelByUuid(GetModelByUuidRequest) : ResolvedModel
+  }
+
+  class "AccountService::Stub" as AccountServiceStub <<gRPC>>
+
+  class ResolvedModel <<message>> {
+    + account : AgentAccount
+    + model : ModelDescriptor
+  }
+
+  class ModelMatch <<message>> {
+    + account_id : string
+    + model : ModelDescriptor
+  }
+
+  class DetectModelsResponse <<message>> {
+    + account : AgentAccount
+    + added_model_ids : repeated string
+  }
+}
+
+package "Programs" as programs {
+  class "gxde-ai-core" as ServerMain <<executable>> {
+    + flag socket : std::string
+    + flag providers_dir : std::string
+  }
+
+  class Ctl <<gxde-ai-ctl>> {
+    - stub_ : std::unique_ptr<AccountService::Stub>
+    + Run(args : const Args&) : absl::Status
+    - RunAccount(verb : absl::string_view, args : const Args&) : absl::Status
+    - RunModel(verb : absl::string_view, args : const Args&) : absl::Status
+  }
+}
+
+package "Server" as server {
+  class AccountServiceImpl {
+    - store_ : const AccountStore*
+    - detector_ : const ModelDetector*
+    - mutex_ : absl::Mutex
+    + CreateAccount(context : grpc::ServerContext*, request : const CreateAccountRequest*, response : AgentAccount*) : grpc::Status
+    + GetAccount(context : grpc::ServerContext*, request : const GetAccountRequest*, response : AgentAccount*) : grpc::Status
+    + ListAccounts(context : grpc::ServerContext*, request : const ListAccountsRequest*, response : ListAccountsResponse*) : grpc::Status
+    + UpdateAccount(context : grpc::ServerContext*, request : const UpdateAccountRequest*, response : AgentAccount*) : grpc::Status
+    + DeleteAccount(context : grpc::ServerContext*, request : const DeleteAccountRequest*, response : google::protobuf::Empty*) : grpc::Status
+    + DetectModels(context : grpc::ServerContext*, request : const DetectModelsRequest*, response : DetectModelsResponse*) : grpc::Status
+    + AddModel(context : grpc::ServerContext*, request : const AddModelRequest*, response : ModelDescriptor*) : grpc::Status
+    + UpdateModel(context : grpc::ServerContext*, request : const UpdateModelRequest*, response : ModelDescriptor*) : grpc::Status
+    + DeleteModel(context : grpc::ServerContext*, request : const DeleteModelRequest*, response : google::protobuf::Empty*) : grpc::Status
+    + SearchModels(context : grpc::ServerContext*, request : const SearchModelsRequest*, response : SearchModelsResponse*) : grpc::Status
+    + GetModelByUuid(context : grpc::ServerContext*, request : const GetModelByUuidRequest*, response : ResolvedModel*) : grpc::Status
+    - LoadAllLocked() : absl::StatusOr<std::vector<AgentAccount>>
+    - LoadLocked(account_id : absl::string_view) : absl::StatusOr<AgentAccount>
+  }
+}
+
+package "Accounts" as accounts {
+  class AccountStore {
+    - directory_ : std::string
+    + Init() : absl::Status
+    + Exists(account_id : absl::string_view) : bool
+    + Load(account_id : absl::string_view) : absl::StatusOr<AgentAccount>
+    + LoadAll() : absl::StatusOr<std::vector<AgentAccount>>
+    + Save(account : const AgentAccount&) : absl::Status
+    + Remove(account_id : absl::string_view) : absl::Status
+    + Directory() : const std::string&
+  }
+
+  interface ModelDetector {
+    + {abstract} Detect(account : const AgentAccount&) : absl::StatusOr<std::vector<ModelDescriptor>>
+  }
+
+  class HttpModelDetector {
+    - http_client_ : const HttpClient*
+    + Detect(account : const AgentAccount&) : absl::StatusOr<std::vector<ModelDescriptor>>
+  }
+
+  class model_list_parser <<functions>> {
+    + ParseOpenAiModelList(json : absl::string_view) : absl::StatusOr<ModelListPage>
+    + ParseAnthropicModelList(json : absl::string_view) : absl::StatusOr<ModelListPage>
+    + ParseGeminiModelList(json : absl::string_view) : absl::StatusOr<ModelListPage>
+  }
+
+  class ModelListPage <<struct>> {
+    + models : std::vector<ModelDescriptor>
+    + next_page_token : std::string
+  }
+
+  class provider_defaults <<functions>> {
+    + FamilyOf(protocol : ApiProtocol) : ProtocolFamily
+    + ApplyProviderDefaults(account : AgentAccount*) : void
+  }
+
+  enum ProtocolFamily {
+    kUnknown
+    kOpenAi
+    kAnthropic
+    kGemini
+  }
+}
+
+package "Core" as core {
+  class paths <<functions>> {
+    + ConfigHome() : absl::StatusOr<std::string>
+    + DefaultProvidersDir() : absl::StatusOr<std::string>
+    + DefaultSocketPath() : std::string
+    + ToGrpcAddress(socket_path : absl::string_view) : std::string
+  }
+
+  class uuid <<functions>> {
+    + NewUuid() : std::string
+    + IsValidUuid(text : absl::string_view) : bool
+  }
+
+  class status_util <<functions>> {
+    + ToGrpcStatus(status : const absl::Status&) : grpc::Status
+    + FromGrpcStatus(status : const grpc::Status&) : absl::Status
+  }
+}
+
+package "Net" as net {
+  interface HttpClient {
+    + {abstract} Get(url : const std::string&, headers : const HttpHeaders&) : absl::StatusOr<HttpResponse>
+  }
+
+  class CurlHttpClient {
+    + Get(url : const std::string&, headers : const HttpHeaders&) : absl::StatusOr<HttpResponse>
+  }
+
+  class HttpResponse <<struct>> {
+    + status_code : int64_t
+    + body : std::string
+  }
+}
+
+AgentAccountHolder *-- "0..*" AgentAccount
+AgentAccountHolder *-- ModelReference
+AgentAccount --> Provider
+AgentAccount --> ApiProtocol
+AgentAccount *-- Authentication
+AgentAccount *-- "0..*" ModelDescriptor
+Authentication *-- HeaderAuthentication
+Authentication *-- NoAuthentication
+HeaderAuthentication *-- CredentialReference
+ModelDescriptor *-- TokenLimits
+ModelDescriptor *-- ModelCapabilities
+ModelDescriptor *-- ModelPricing
+ModelDescriptor --> Modality
+
+ResolvedModel *-- AgentAccount
+ResolvedModel *-- ModelDescriptor
+ModelMatch *-- ModelDescriptor
+DetectModelsResponse *-- AgentAccount
+
+AccountServiceBase <|-- AccountServiceImpl
+Ctl --> AccountServiceStub : calls over UNIX socket
+AccountServiceStub ..> AccountServiceBase : gRPC + protobuf
+
+ServerMain *-- AccountStore
+ServerMain *-- CurlHttpClient
+ServerMain *-- HttpModelDetector
+ServerMain *-- AccountServiceImpl
+ServerMain ..> paths : resolves directories with
+
+AccountServiceImpl --> AccountStore : loads and saves with
+AccountServiceImpl --> ModelDetector : detects models with
+AccountServiceImpl ..> provider_defaults : fills defaults with
+AccountServiceImpl ..> uuid : assigns model UUIDs with
+AccountServiceImpl ..> status_util
+
+AccountStore ..> AgentAccount : one {id}.textproto each
+
+ModelDetector <|.. HttpModelDetector
+HttpModelDetector --> HttpClient : lists models with
+HttpModelDetector ..> model_list_parser : parses pages with
+HttpModelDetector ..> provider_defaults : picks endpoint by family
+model_list_parser ..> ModelListPage : returns
+provider_defaults ..> ProtocolFamily
+
+HttpClient <|.. CurlHttpClient
+HttpClient ..> HttpResponse : returns
+
+note right of AccountStore
+  One file per account:
+  $XDG_CONFIG_HOME/gxde-ai-core/providers/{id}.textproto
+  (default ~/.config/...). The file name is the account ID.
+  Directory 0700, files 0600, replaced atomically
+  (mkstemp + fsync + rename).
+end note
+
+note right of HttpModelDetector
+  Called when CreateAccount has no models,
+  and by DetectModels (which only adds new IDs).
+  OpenAI:    GET {base}/models
+  Anthropic: GET {base}/v1/models (after_id paging)
+  Gemini:    GET {base}/v1beta/models (pageToken paging)
+  API key is read from the server's environment.
+end note
+
+note bottom of AccountServiceImpl
+  Every load runs under mutex_ through LoadAllLocked(),
+  which gives each model a UUID unique across all
+  accounts, repairing missing or duplicated ones and
+  saving the file. Client-supplied UUIDs are ignored,
+  and UpdateModel rejects the "id" and "uuid" paths.
+  Network calls are made without holding mutex_.
+end note
+
+note bottom of ResolvedModel
+  GetModelByUuid returns the owning account
+  (provider, protocol, base URL, auth) with its
+  models list cleared, plus the requested model.
+end note
+
+@enduml
