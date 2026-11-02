@@ -1,0 +1,125 @@
+// Implementation of agent account config.
+// ----------------------------------------------------------------------------
+// Copyright (C) 2026 CharOfString <root@charofstring.cc>
+//
+// This program is free software: you can redistribute it and/or modify it
+// under the terms of the GNU General Public License as published by the Free
+// Software Foundation, either version 3 of the License, or (at your option)
+// any later version.
+//
+// This program is distributed in the hope that it will be useful, but WITHOUT
+// ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or
+// FITNESS FOR A PARTICULAR PURPOSE. See the GNU General Public License for
+// more details.
+//
+// You should have received a copy of the GNU General Public License along
+// with this program. If not, see <https://www.gnu.org/licenses/>. 
+
+syntax = "proto3";
+package gxde.ai.agent;
+
+import "google/protobuf/empty.proto";
+
+message AgentAccountHolder {
+  repeated AgentAccount accounts = 1;
+  ModelReference default_model = 2;
+}
+
+message ModelReference {
+  string account_id = 1;
+  string model_id = 2;
+}
+
+enum Provider {
+  PROVIDER_UNSPECIFIED = 0;
+  PROVIDER_OPENAI = 1;
+  PROVIDER_ANTHROPIC = 2;
+  PROVIDER_GOOGLE_GEMINI = 3;
+  PROVIDER_CUSTOM = 4;
+}
+
+enum ApiProtocol {
+  API_PROTOCOL_UNSPECIFIED = 0;
+  API_PROTOCOL_OPENAI_CHAT_COMPLETIONS = 1;
+  API_PROTOCOL_OPENAI_RESPONSES = 2;
+  API_PROTOCOL_ANTHROPIC_MESSAGES = 3;
+  API_PROTOCOL_GEMINI_GENERATE_CONTENT = 4;
+  API_PROTOCOL_GEMINI_INTERACTIONS = 5;
+}
+
+message AgentAccount {
+  string id = 1;
+  string display_name = 2;
+  Provider provider = 3;
+  ApiProtocol api_protocol = 4;
+  string base_url = 5;
+  Authentication auth = 6;
+  map<string, string> extra_headers = 7;
+  repeated ModelDescriptor models = 8;
+  bool disabled = 9;
+}
+
+message Authentication {
+  oneof method {
+    HeaderAuthentication header = 1;
+    NoAuthentication no_auth = 2;
+  }
+}
+
+message NoAuthentication {}
+
+message HeaderAuthentication {
+  string header_name = 1;
+  string value_prefix = 2;
+  CredentialReference credential = 3;
+}
+
+message CredentialReference {
+  oneof source {
+    string keyring_id = 1;
+    string environment_variable = 2;
+  }
+}
+
+enum Modality {
+  MODALITY_UNSPECIFIED = 0;
+  MODALITY_TEXT = 1;
+  MODALITY_IMAGE = 2;
+  MODALITY_AUDIO = 3;
+  MODALITY_VIDEO = 4;
+}
+
+message ModelDescriptor {
+  string id = 1;
+  string display_name = 2;
+  TokenLimits token_limits = 3;
+  repeated Modality input_modalities = 4;
+  repeated Modality output_modalities = 5;
+  ModelCapabilities capabilities = 6;
+  ModelPricing pricing = 7;
+  bool disabled = 8;
+}
+
+message TokenLimits {
+  uint64 context_window_tokens = 1;
+  uint64 max_input_tokens = 2;
+  uint64 max_output_tokens = 3;
+}
+
+message ModelCapabilities {
+  optional bool tool_calling = 1;
+  optional bool streaming = 2;
+  optional bool structured_output = 3;
+  optional bool reasoning = 4;
+  optional bool parallel_tool_calls = 5;
+  optional bool prompt_caching = 6;
+  optional bool image_generation = 7;
+  optional bool image_editing = 8;
+}
+
+message ModelPricing {
+  string currency = 1;  // ISO 4217, e.g. "USD".
+  optional double input_per_million_tokens = 2;
+  optional double output_per_million_tokens = 3;
+  optional double cached_input_per_million_tokens = 4;
+}
