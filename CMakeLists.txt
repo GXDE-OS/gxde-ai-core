@@ -37,7 +37,7 @@ set(gtest_force_shared_crt ON CACHE BOOL "" FORCE)
 FetchContent_MakeAvailable(googletest)
 find_package(Protobuf REQUIRED)
 include_directories(${Protobuf_INCLUDE_DIRS})
-file(GLOB PROTO_FILES "src/proto/*.proto")
+file(GLOB PROTO_FILES "proto/*.proto")
 protobuf_generate_cpp(PROTO_SRCS PROTO_HDRS ${PROTO_FILES})
 
 add_library(core-lib
