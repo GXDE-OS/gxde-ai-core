@@ -1,4 +1,4 @@
-/* HTTP client struct holder.
+/* UNIX IPC example client (backend).
  * ----------------------------------------------------------------------------
  * Copyright (C) 2026 CharOfString <root@charofstring.cc>
  *
@@ -16,45 +16,33 @@
  * with this program. If not, see <https://www.gnu.org/licenses/>.
  */
 
-#ifndef SRC_CORE_HTTP_CLIENT_H_
-#define SRC_CORE_HTTP_CLIENT_H_
+#ifndef EXAMPLE_GRPC_PROTO_IPC_GREETER_CLIENT_H_
+#define EXAMPLE_GRPC_PROTO_IPC_GREETER_CLIENT_H_
 
-#include <absl/functional/function_ref.h>
-#include <absl/status/status.h>
 #include <absl/status/statusor.h>
 #include <absl/strings/string_view.h>
+#include <grpcpp/grpcpp.h>
 
+#include <memory>
 #include <string>
-#include <unordered_map>
+
+#include "greeting.grpc.pb.h"
 
 namespace gxde {
 namespace ai {
-namespace core {
 
-struct HttpRequest {
-  std::string url;
-  std::string method;
-  std::string body;
-  std::unordered_map<std::string, std::string> headers;
-};
-
-struct HttpResponse {
-  int status_code;
-  std::string body;
-  std::unordered_map<std::string, std::string> headers;
-};
-
-class HttpClient {
+class GreeterClient {
  public:
-  virtual ~HttpClient() = default;
-  virtual absl::StatusOr<HttpResponse> Send(const HttpRequest& request) = 0;
-  virtual absl::Status SendStream(
-      const HttpRequest& request,
-      absl::FunctionRef<absl::Status(absl::string_view)> on_chunk) = 0;
+  explicit GreeterClient(std::shared_ptr<grpc::Channel> channel);
+
+  // Sends a SayHello RPC and returns the greeting text.
+  absl::StatusOr<std::string> SayHello(absl::string_view name) const;
+
+ private:
+  std::unique_ptr<GreeterService::Stub> stub_;
 };
 
-}  // namespace core
 }  // namespace ai
 }  // namespace gxde
 
-#endif  // SRC_CORE_HTTP_CLIENT_H_
+#endif  // EXAMPLE_GRPC_PROTO_IPC_GREETER_CLIENT_H_

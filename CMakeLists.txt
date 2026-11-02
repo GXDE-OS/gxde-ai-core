@@ -35,44 +35,42 @@ FetchContent_Declare(
 
 set(gtest_force_shared_crt ON CACHE BOOL "" FORCE)
 FetchContent_MakeAvailable(googletest)
-find_package(Protobuf REQUIRED)
-include_directories(${Protobuf_INCLUDE_DIRS})
+find_package(Protobuf CONFIG REQUIRED)
+find_package(gRPC CONFIG REQUIRED)
 file(GLOB PROTO_FILES "proto/*.proto")
-protobuf_generate_cpp(PROTO_SRCS PROTO_HDRS ${PROTO_FILES})
 
 add_library(core-lib
-  ${PROTO_SRCS}
-  ${PROTO_HDRS}
-  src/greeter/greeter.h
-  src/greeter/greeter.cc
+  ${PROTO_FILES}
 )
 
-target_include_directories(core-lib PUBLIC 
-  ${CMAKE_CURRENT_SOURCE_DIR} 
+protobuf_generate(
+  TARGET core-lib
+  LANGUAGE cpp
+  IMPORT_DIRS ${CMAKE_CURRENT_SOURCE_DIR}/proto
+  PROTOC_OUT_DIR ${CMAKE_CURRENT_BINARY_DIR}
+)
+
+protobuf_generate(
+  TARGET core-lib
+  LANGUAGE grpc
+  GENERATE_EXTENSIONS .grpc.pb.h .grpc.pb.cc
+  PLUGIN "protoc-gen-grpc=\$<TARGET_FILE:gRPC::grpc_cpp_plugin>"
+  IMPORT_DIRS ${CMAKE_CURRENT_SOURCE_DIR}/proto
+  PROTOC_OUT_DIR ${CMAKE_CURRENT_BINARY_DIR}
+)
+
+target_include_directories(core-lib PUBLIC
+  ${CMAKE_CURRENT_SOURCE_DIR}
   ${CMAKE_CURRENT_BINARY_DIR}
 )
 
 target_link_libraries(core-lib
   PUBLIC
-    absl::strings
-    absl::log_internal_check_op
-    absl::log_internal_message
-    ${Protobuf_LIBRARIES}
+    protobuf::libprotobuf
+    gRPC::grpc++
 )
 
-add_executable(ai-core-prog src/main.cc)
-target_link_libraries(ai-core-prog
-  PRIVATE
-    core-lib
-    absl::flags
-    absl::flags_parse
-)
-
-add_executable(greeter-test tests/greeter_test.cc)
-target_link_libraries(greeter-test
-  PRIVATE
-    core-lib
-    GTest::gtest_main
-)
-
-add_test(NAME GreeterTest COMMAND greeter-test)
+option(GXDE_AI_BUILD_EXAMPLES "Build the example programs." ON)
+if(GXDE_AI_BUILD_EXAMPLES)
+  add_subdirectory(example/grpc_proto_ipc)
+endif()

@@ -1,4 +1,4 @@
-/* Simple greeter program that ensures the protobuf is working as expected.
+/* Greeter gRPC service that other programs reach over a UNIX domain socket.
  * ----------------------------------------------------------------------------
  * Copyright (C) CharOfString <root@charofstring.cc>
  *
@@ -13,28 +13,22 @@
  * more details.
  *
  * You should have received a copy of the GNU General Public License along
- * with this program. If not, see <https://www.gnu.org/licenses/>. 
+ * with this program. If not, see <https://www.gnu.org/licenses/>.
  */
 
-#ifndef SRC_GREETER_GREETER_H_
-#define SRC_GREETER_GREETER_H_
+#include "example/grpc_proto_ipc/greeter.h"
 
-#include <string>
-
-#include "greeting.pb.h"
+#include <absl/strings/str_cat.h>
 
 namespace gxde {
 namespace ai {
 
-class Greeter {
- public:
-  Greeter() = default;
-  ~Greeter() = default;
-
-  GreetingResponse CreateGreeting(const GreetingRequest& request) const;
-};
+grpc::Status GreeterServiceImpl::SayHello(grpc::ServerContext* /*context*/,
+                                          const GreetingRequest* request,
+                                          GreetingResponse* response) {
+  response->set_greeting(absl::StrCat("Hello, ", request->name(), "!"));
+  return grpc::Status::OK;
+}
 
 }  // namespace ai
 }  // namespace gxde
-
-#endif  // SRC_GREETER_GREETER_H_

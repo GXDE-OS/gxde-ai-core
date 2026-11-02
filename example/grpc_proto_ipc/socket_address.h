@@ -1,4 +1,4 @@
-/* Abstract class for parsing agent's stream output.
+/* UNIX IPC example server (backend).
  * ----------------------------------------------------------------------------
  * Copyright (C) 2026 CharOfString <root@charofstring.cc>
  *
@@ -16,33 +16,26 @@
  * with this program. If not, see <https://www.gnu.org/licenses/>.
  */
 
-#ifndef SRC_STREAM_PARSER_STREAM_PARSER_H_
-#define SRC_STREAM_PARSER_STREAM_PARSER_H_
+#ifndef EXAMPLE_GRPC_PROTO_IPC_SOCKET_ADDRESS_H_
+#define EXAMPLE_GRPC_PROTO_IPC_SOCKET_ADDRESS_H_
 
-#include <absl/status/statusor.h>
 #include <absl/strings/string_view.h>
 
-#include <memory>
-#include <vector>
-
-#include "agent.pb.h"
-#include "src/core/http_client.h"
-#include "src/core/secret_store.h"
+#include <string>
 
 namespace gxde {
 namespace ai {
-namespace accounts {
+namespace ipc {
 
-class StreamParser {
- public:
-  virtual ~StreamParser() = default;
-  virtual absl::StatusOr<std::vector<agent::LlmDelta>> Parse(
-      absl::string_view chunk) = 0;
-  virtual absl::StatusOr<agent::LlmResponse> Finish() = 0;
-};
+// Returns $XDG_RUNTIME_DIR/gxde-ai-core.sock, or a per-user path under /tmp
+// when XDG_RUNTIME_DIR is not set.
+std::string DefaultSocketPath();
 
-}  // namespace accounts
+// Converts a filesystem path into a gRPC target such as "unix:/run/x.sock".
+std::string ToGrpcAddress(absl::string_view socket_path);
+
+}  // namespace ipc
 }  // namespace ai
 }  // namespace gxde
 
-#endif  // SRC_STREAM_PARSER_STREAM_PARSER_H_
+#endif  // EXAMPLE_GRPC_PROTO_IPC_SOCKET_ADDRESS_H_

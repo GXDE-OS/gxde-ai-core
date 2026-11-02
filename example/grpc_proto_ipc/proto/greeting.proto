@@ -1,4 +1,4 @@
-// This is a simple protobuf file that tests protobuf is working.
+// Greeter service used to test gRPC over a UNIX domain socket.
 // ----------------------------------------------------------------------------
 // Copyright (C) CharOfString <root@charofstring.cc>
 //
@@ -24,4 +24,8 @@ message GreetingRequest {
 
 message GreetingResponse {
   string greeting = 1;
+}
+
+service GreeterService {
+  rpc SayHello(GreetingRequest) returns (GreetingResponse);
 }

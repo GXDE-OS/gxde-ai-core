@@ -1,4 +1,4 @@
-/* Abstract class for secret storing.
+/* UNIX IPC example server (backend).
  * ----------------------------------------------------------------------------
  * Copyright (C) 2026 CharOfString <root@charofstring.cc>
  *
@@ -16,29 +16,38 @@
  * with this program. If not, see <https://www.gnu.org/licenses/>.
  */
 
-#ifndef SRC_CORE_SECRET_STORE_H_
-#define SRC_CORE_SECRET_STORE_H_
+#include "example/grpc_proto_ipc/socket_address.h"
 
-#include <absl/status/statusor.h>
-#include <absl/strings/string_view.h>
+#include <absl/strings/str_cat.h>
+#include <unistd.h>
 
+#include <cstdlib>
 #include <string>
 
 namespace gxde {
 namespace ai {
-namespace core {
+namespace ipc {
 
-using SecretString = std::string;
+namespace {
 
-class SecretStore {
- public:
-  virtual ~SecretStore() = default;
-  virtual absl::StatusOr<SecretString> Resolve(
-      absl::string_view secret_ref) = 0;
-};
+constexpr absl::string_view kSocketName = "gxde-ai-core.sock";
 
-}  // namespace core
+}  // namespace
+
+std::string DefaultSocketPath() {
+  const char* runtime_dir = std::getenv("XDG_RUNTIME_DIR");
+  if (runtime_dir != nullptr && runtime_dir[0] != '\0') {
+    return absl::StrCat(runtime_dir, "/", kSocketName);
+  }
+
+  // Include the uid so different users on the same machine do not collide.
+  return absl::StrCat("/tmp/gxde-ai-core-", getuid(), ".sock");
+}
+
+std::string ToGrpcAddress(absl::string_view socket_path) {
+  return absl::StrCat("unix:", socket_path);
+}
+
+}  // namespace ipc
 }  // namespace ai
 }  // namespace gxde
-
-#endif  // SRC_CORE_SECRET_STORE_H_

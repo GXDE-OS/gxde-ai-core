@@ -1,4 +1,4 @@
-/* Abstract LLM provider account that translates requests to its wire format.
+/* UNIX IPC example client (backend).
  * ----------------------------------------------------------------------------
  * Copyright (C) 2026 CharOfString <root@charofstring.cc>
  *
@@ -16,17 +16,37 @@
  * with this program. If not, see <https://www.gnu.org/licenses/>.
  */
 
+#include "example/grpc_proto_ipc/greeter_client.h"
+
+#include <absl/status/status.h>
+
+#include <memory>
+#include <string>
 #include <utility>
 
-#include "src/accounts/account.h"
+#include "greeting.pb.h"
 
 namespace gxde {
 namespace ai {
-namespace accounts {
 
-Account::Account(agent::AccountConfig config, core::SecretString api_key)
-    : config_(std::move(config)), api_key_(std::move(api_key)) {}
+GreeterClient::GreeterClient(std::shared_ptr<grpc::Channel> channel)
+    : stub_(GreeterService::NewStub(std::move(channel))) {}
 
-}  // namespace accounts
+absl::StatusOr<std::string> GreeterClient::SayHello(
+    absl::string_view name) const {
+  GreetingRequest request;
+  request.set_name(name);
+
+  GreetingResponse response;
+  grpc::ClientContext context;
+  grpc::Status status = stub_->SayHello(&context, request, &response);
+  if (!status.ok()) {
+    return absl::Status(static_cast<absl::StatusCode>(status.error_code()),
+                        status.error_message());
+  }
+
+  return response.greeting();
+}
+
 }  // namespace ai
 }  // namespace gxde
