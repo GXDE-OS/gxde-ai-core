@@ -107,7 +107,7 @@ project(gxde-ai-core CXX)
 ```protobuf
 // This is a simple protobuf file that tests protobuf is working.
 // ----------------------------------------------------------------------------
-// Copyright (C) CharOfString <root@charofstring.cc>
+// Copyright (C) 2026 CharOfString <root@charofstring.cc>
 //
 // This program is free software: you can redistribute it and/or modify it
 // under the terms of the GNU General Public License as published by the Free
@@ -129,7 +129,7 @@ package gxde.ai;
 ```C++
 /* Main entry of the program.
  * ----------------------------------------------------------------------------
- * Copyright (C) CharOfString <root@charofstring.cc>
+ * Copyright (C) 2026 CharOfString <root@charofstring.cc>
  *
  * This program is free software: you can redistribute it and/or modify it
  * under the terms of the GNU General Public License as published by the Free
