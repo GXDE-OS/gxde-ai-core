@@ -27,8 +27,8 @@ namespace gxde {
 namespace ai {
 namespace ipc {
 
-// Returns $XDG_RUNTIME_DIR/gxde-ai-core.sock, or a per-user path under /tmp
-// when XDG_RUNTIME_DIR is not set.
+// Returns $XDG_RUNTIME_DIR/gxde-ai-core-example.sock, or a per-user path under
+// /tmp when XDG_RUNTIME_DIR is not set.
 std::string DefaultSocketPath();
 
 // Converts a filesystem path into a gRPC target such as "unix:/run/x.sock".

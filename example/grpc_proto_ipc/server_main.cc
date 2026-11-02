@@ -33,7 +33,7 @@
 
 ABSL_FLAG(std::string, socket, "",
           "Path of the UNIX socket to listen on. Defaults to "
-          "$XDG_RUNTIME_DIR/gxde-ai-core.sock.");
+          "$XDG_RUNTIME_DIR/gxde-ai-core-example.sock.");
 
 int main(int argc, char** argv) {
   absl::ParseCommandLine(argc, argv);

@@ -29,7 +29,7 @@
 
 ABSL_FLAG(std::string, socket, "",
           "Path of the UNIX socket to connect to. Defaults to "
-          "$XDG_RUNTIME_DIR/gxde-ai-core.sock.");
+          "$XDG_RUNTIME_DIR/gxde-ai-core-example.sock.");
 ABSL_FLAG(std::string, name, "char", "Name to send in the greeting request.");
 
 int main(int argc, char** argv) {

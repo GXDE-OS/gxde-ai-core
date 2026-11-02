@@ -30,7 +30,7 @@ namespace ipc {
 
 namespace {
 
-constexpr absl::string_view kSocketName = "gxde-ai-core.sock";
+constexpr absl::string_view kSocketName = "gxde-ai-core-example.sock";
 
 }  // namespace
 
@@ -41,7 +41,7 @@ std::string DefaultSocketPath() {
   }
 
   // Include the uid so different users on the same machine do not collide.
-  return absl::StrCat("/tmp/gxde-ai-core-", getuid(), ".sock");
+  return absl::StrCat("/tmp/gxde-ai-core-example-", getuid(), ".sock");
 }
 
 std::string ToGrpcAddress(absl::string_view socket_path) {
