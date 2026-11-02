@@ -93,17 +93,21 @@ message ModelDescriptor {
   string id = 1;
   string display_name = 2;
   TokenLimits token_limits = 3;
+
   repeated Modality input_modalities = 4;
   repeated Modality output_modalities = 5;
+
   ModelCapabilities capabilities = 6;
   ModelPricing pricing = 7;
   bool disabled = 8;
+  string uuid = 9;
 }
 
 message TokenLimits {
   uint64 context_window_tokens = 1;
   uint64 max_input_tokens = 2;
   uint64 max_output_tokens = 3;
+  uint64 max_output_tokens_override = 4;
 }
 
 message ModelCapabilities {

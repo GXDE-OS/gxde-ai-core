@@ -1,0 +1,109 @@
+// gRPC service for managing provider accounts and their models.
+// ----------------------------------------------------------------------------
+// Copyright (C) 2026 CharOfString <root@charofstring.cc>
+//
+// This program is free software: you can redistribute it and/or modify it
+// under the terms of the GNU General Public License as published by the Free
+// Software Foundation, either version 3 of the License, or (at your option)
+// any later version.
+//
+// This program is distributed in the hope that it will be useful, but WITHOUT
+// ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or
+// FITNESS FOR A PARTICULAR PURPOSE. See the GNU General Public License for
+// more details.
+//
+// You should have received a copy of the GNU General Public License along
+// with this program. If not, see <https://www.gnu.org/licenses/>.
+
+syntax = "proto3";
+package gxde.ai.agent;
+
+import "account.proto";
+import "google/protobuf/empty.proto";
+import "google/protobuf/field_mask.proto";
+
+message CreateAccountRequest {
+  AgentAccount account = 1;
+}
+
+message GetAccountRequest {
+  string account_id = 1;
+}
+
+message ListAccountsRequest {}
+
+message ListAccountsResponse {
+  repeated AgentAccount accounts = 1;
+}
+
+message UpdateAccountRequest {
+  AgentAccount account = 1;
+  google.protobuf.FieldMask update_mask = 2;
+}
+
+message DeleteAccountRequest {
+  string account_id = 1;
+}
+
+message DetectModelsRequest {
+  string account_id = 1;
+}
+
+message DetectModelsResponse {
+  AgentAccount account = 1;
+  repeated string added_model_ids = 2;
+}
+
+message AddModelRequest {
+  string account_id = 1;
+  ModelDescriptor model = 2;
+}
+
+message UpdateModelRequest {
+  string account_id = 1;
+  ModelDescriptor model = 2;
+  google.protobuf.FieldMask update_mask = 3;
+}
+
+message DeleteModelRequest {
+  string account_id = 1;
+  string model_id = 2;
+}
+
+message SearchModelsRequest {
+  string query = 1;
+  string account_id = 2;
+}
+
+message ModelMatch {
+  string account_id = 1;
+  ModelDescriptor model = 2;
+}
+
+message SearchModelsResponse {
+  repeated ModelMatch matches = 1;
+}
+
+message GetModelByUuidRequest {
+  string model_uuid = 1;
+}
+
+message ResolvedModel {
+  AgentAccount account = 1;
+  ModelDescriptor model = 2;
+}
+
+service AccountService {
+  rpc CreateAccount(CreateAccountRequest) returns (AgentAccount);
+  rpc GetAccount(GetAccountRequest) returns (AgentAccount);
+  rpc ListAccounts(ListAccountsRequest) returns (ListAccountsResponse);
+  rpc UpdateAccount(UpdateAccountRequest) returns (AgentAccount);
+  rpc DeleteAccount(DeleteAccountRequest) returns (google.protobuf.Empty);
+
+  rpc DetectModels(DetectModelsRequest) returns (DetectModelsResponse);
+  rpc AddModel(AddModelRequest) returns (ModelDescriptor);
+  rpc UpdateModel(UpdateModelRequest) returns (ModelDescriptor);
+  rpc DeleteModel(DeleteModelRequest) returns (google.protobuf.Empty);
+  rpc SearchModels(SearchModelsRequest) returns (SearchModelsResponse);
+  rpc GetModelByUuid(GetModelByUuidRequest) returns (ResolvedModel);
+}
