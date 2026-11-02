@@ -80,3 +80,81 @@ if (another_thing) {
 ### Comment Style
 Code submitted should clearly express its own intent, rather than relying on extensive comments.
 Please use comments only when necessary, and write them in simple English.
+
+### License Header
+New files shall have their own license headers, here are some examples:
+```CMake
+# CMake file for GXDE AI Core Modules.
+# -----------------------------------------------------------------------------
+# Copyright (C) 2026 CharOfString <root@charofstring.cc>
+#
+# This program is free software: you can redistribute it and/or modify it under
+# the terms of the GNU General Public License as published by the Free Software
+# Foundation, either version 3 of the License, or (at your option) any later
+# version.
+#
+# This program is distributed in the hope that it will be useful, but WITHOUT
+# ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or
+# FITNESS FOR A PARTICULAR PURPOSE. See the GNU General Public License for more
+# details.
+#
+# You should have received a copy of the GNU General Public License along with
+# this program. If not, see <https://www.gnu.org/licenses/>.
+
+cmake_minimum_required(VERSION 3.14)
+project(gxde-ai-core CXX)
+```
+
+```protobuf
+// This is a simple protobuf file that tests protobuf is working.
+// ----------------------------------------------------------------------------
+// Copyright (C) CharOfString <root@charofstring.cc>
+//
+// This program is free software: you can redistribute it and/or modify it
+// under the terms of the GNU General Public License as published by the Free
+// Software Foundation, either version 3 of the License, or (at your option)
+// any later version.
+//
+// This program is distributed in the hope that it will be useful, but WITHOUT
+// ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or
+// FITNESS FOR A PARTICULAR PURPOSE. See the GNU General Public License for
+// more details.
+//
+// You should have received a copy of the GNU General Public License along
+// with this program. If not, see <https://www.gnu.org/licenses/>. 
+
+syntax = "proto3";
+package gxde.ai;
+```
+
+```C++
+/* Main entry of the program.
+ * ----------------------------------------------------------------------------
+ * Copyright (C) CharOfString <root@charofstring.cc>
+ *
+ * This program is free software: you can redistribute it and/or modify it
+ * under the terms of the GNU General Public License as published by the Free
+ * Software Foundation, either version 3 of the License, or (at your option)
+ * any later version.
+ *
+ * This program is distributed in the hope that it will be useful, but WITHOUT
+ * ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or
+ * FITNESS FOR A PARTICULAR PURPOSE. See the GNU General Public License for
+ * more details.
+ *
+ * You should have received a copy of the GNU General Public License along
+ * with this program. If not, see <https://www.gnu.org/licenses/>. 
+ */
+
+#include <sysexits.h>
+#include <absl/flags/flag.h>
+```
+
+The first line is always a short description of what this file does. You should keep the description 1~3 sentence. 1 secentence is preferred.
+
+### New Line at End of File
+Please place a new line character at the end of file:
+```C++
+}  // namespace
+
+```

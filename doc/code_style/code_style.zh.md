@@ -79,3 +79,81 @@ if (another_thing) {
 
 ### 注释风格
 代码应该清楚表现自己要干什么，而不是依赖大量注释。请仅在必要时注释，并在注释中使用简单英文。
+
+### License头
+新的文件应该有自己的License header，以下是示例：
+```CMake
+# CMake file for GXDE AI Core Modules.
+# -----------------------------------------------------------------------------
+# Copyright (C) 2026 CharOfString <root@charofstring.cc>
+#
+# This program is free software: you can redistribute it and/or modify it under
+# the terms of the GNU General Public License as published by the Free Software
+# Foundation, either version 3 of the License, or (at your option) any later
+# version.
+#
+# This program is distributed in the hope that it will be useful, but WITHOUT
+# ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or
+# FITNESS FOR A PARTICULAR PURPOSE. See the GNU General Public License for more
+# details.
+#
+# You should have received a copy of the GNU General Public License along with
+# this program. If not, see <https://www.gnu.org/licenses/>.
+
+cmake_minimum_required(VERSION 3.14)
+project(gxde-ai-core CXX)
+```
+
+```protobuf
+// This is a simple protobuf file that tests protobuf is working.
+// ----------------------------------------------------------------------------
+// Copyright (C) CharOfString <root@charofstring.cc>
+//
+// This program is free software: you can redistribute it and/or modify it
+// under the terms of the GNU General Public License as published by the Free
+// Software Foundation, either version 3 of the License, or (at your option)
+// any later version.
+//
+// This program is distributed in the hope that it will be useful, but WITHOUT
+// ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or
+// FITNESS FOR A PARTICULAR PURPOSE. See the GNU General Public License for
+// more details.
+//
+// You should have received a copy of the GNU General Public License along
+// with this program. If not, see <https://www.gnu.org/licenses/>. 
+
+syntax = "proto3";
+package gxde.ai;
+```
+
+```C++
+/* Main entry of the program.
+ * ----------------------------------------------------------------------------
+ * Copyright (C) CharOfString <root@charofstring.cc>
+ *
+ * This program is free software: you can redistribute it and/or modify it
+ * under the terms of the GNU General Public License as published by the Free
+ * Software Foundation, either version 3 of the License, or (at your option)
+ * any later version.
+ *
+ * This program is distributed in the hope that it will be useful, but WITHOUT
+ * ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or
+ * FITNESS FOR A PARTICULAR PURPOSE. See the GNU General Public License for
+ * more details.
+ *
+ * You should have received a copy of the GNU General Public License along
+ * with this program. If not, see <https://www.gnu.org/licenses/>. 
+ */
+
+#include <sysexits.h>
+#include <absl/flags/flag.h>
+```
+
+其中，第一行总是对这一份文件的简要描述（控制在3句话内，最好是一句话）。
+
+### 换行符
+每个文件结尾都需要一个换行符：
+```C++
+}  // namespace
+
+```
