@@ -25,7 +25,7 @@ namespace gxde {
 namespace ai {
 namespace utils {
 
-absl::Status FromGrpcStatus(const grpc::Status& status) {
+absl::Status StatusHandler::FromGrpcStatus(const grpc::Status& status) {
   if (status.ok()) {
     return absl::OkStatus();
   }
