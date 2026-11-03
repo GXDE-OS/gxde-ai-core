@@ -48,6 +48,8 @@ override_dh_auto_install:
 	install -d debian/gxde-ai-core/usr/lib/gxde-ai-core
 	cp -a dist/linux-$(NODE_ARCH)/. debian/gxde-ai-core/usr/lib/gxde-ai-core/
 	chmod 0755 debian/gxde-ai-core/usr/lib/gxde-ai-core/gxde-ai-core
+	install -d debian/gxde-ai-core/usr/bin
+	install -m 0755 packaging/gxde-ai-core.sh debian/gxde-ai-core/usr/bin/gxde-ai-core
 
 override_dh_install:
 	# Installed in override_dh_auto_install.

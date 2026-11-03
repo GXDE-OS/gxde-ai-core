@@ -34,6 +34,7 @@ import { PolicyEngine } from '../policy/policy-engine.js';
 import { PolicyDecision } from '../policy/types.js';
 import { MessageBus } from '../confirmation-bus/message-bus.js';
 import { Storage } from '../config/storage.js';
+import { GEMINI_DIR } from '../utils/paths.js';
 import type { AgentLoopContext } from '../config/agent-loop-context.js';
 import { READ_FILE_TOOL_NAME } from '../tools/tool-names.js';
 import {
@@ -793,12 +794,12 @@ async function buildExistingSkillsSummary(
 
       if (globalSkills.length > 0) {
         sections.push(
-          `## Global Skills (~/.gemini/skills — do NOT duplicate)\n${globalSkills.join('\n')}`,
+          `## Global Skills (~/${GEMINI_DIR}/skills — do NOT duplicate)\n${globalSkills.join('\n')}`,
         );
       }
       if (workspaceSkills.length > 0) {
         sections.push(
-          `## Workspace Skills (.gemini/skills — do NOT duplicate)\n${workspaceSkills.join('\n')}`,
+          `## Workspace Skills (${GEMINI_DIR}/skills — do NOT duplicate)\n${workspaceSkills.join('\n')}`,
         );
       }
       if (extensionSkills.length > 0) {

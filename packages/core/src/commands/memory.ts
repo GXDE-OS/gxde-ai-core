@@ -13,6 +13,7 @@ import type { Config } from '../config/config.js';
 import { Storage } from '../config/storage.js';
 import { flattenMemory } from '../config/memory.js';
 import { loadSkillFromFile, loadSkillsFromDir } from '../skills/skillLoader.js';
+import { GEMINI_DIR } from '../utils/paths.js';
 import {
   type AppliedSkillPatchTarget,
   type InboxMemoryPatchKind,
@@ -259,7 +260,9 @@ export async function moveInboxSkill(
   await fs.rm(sourcePath, { recursive: true, force: true });
 
   const label =
-    destination === 'global' ? '~/.gemini/skills' : '.gemini/skills';
+    destination === 'global'
+      ? `~/${GEMINI_DIR}/skills`
+      : `${GEMINI_DIR}/skills`;
   return {
     success: true,
     message: `Moved "${dirName}" to ${label}.`,

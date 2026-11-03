@@ -10,6 +10,23 @@ and uses it to create the SEA executable. This keeps the resulting package free
 of a runtime dependency on Debian's `libnode`/`nodejs`. Other architectures use
 the system Node.js provided by the build dependencies.
 
+Configuration isolation
+-----------------------
+
+The packaged launcher sets `GXDE_AI_CORE_HOME` to the user's home directory.
+In this mode the application uses `~/.gxde-ai-core` instead of `~/.gemini`, so
+its settings, provider accounts, history, extensions and keychain entries are
+completely separate from Gemini CLI and Hachimi CLI installations.
+
+You can override the location with `GXDE_AI_CORE_HOME`. For example:
+
+    GXDE_AI_CORE_HOME=/srv/gxde-ai-core gxde-ai-core
+
+The application then uses `/srv/gxde-ai-core/.gxde-ai-core`.
+
+Installation layout
+-------------------
+
 The standalone binary and its sidecars are installed under
 `/usr/lib/gxde-ai-core` and exposed through `/usr/bin/gxde-ai-core` and
 `/usr/bin/hachimi`.

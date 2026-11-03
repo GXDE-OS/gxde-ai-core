@@ -10,17 +10,38 @@ import * as crypto from 'node:crypto';
 import * as fs from 'node:fs';
 import { fileURLToPath } from 'node:url';
 
-export const GEMINI_DIR = '.gemini';
+export const GEMINI_DIR = process.env['GXDE_AI_CORE_HOME']
+  ? '.gxde-ai-core'
+  : '.gemini';
 export const GOOGLE_ACCOUNTS_FILENAME = 'google_accounts.json';
 export const TRUSTED_FOLDERS_FILENAME = 'trustedFolders.json';
 
 /**
+ * Returns true when the CLI is running in the packaged, isolated configuration
+ * mode enabled by GXDE_AI_CORE_HOME.
+ */
+export function isIsolatedConfig(): boolean {
+  return !!process.env['GXDE_AI_CORE_HOME'];
+}
+
+/**
+ * Scopes a keychain service name to this installation when configuration
+ * isolation is enabled, so packaged credentials do not collide with Gemini CLI
+ * or Hachimi CLI credentials.
+ */
+export function getKeychainServiceName(baseName: string): string {
+  return isIsolatedConfig() ? `gxde-ai-core-${baseName}` : baseName;
+}
+
+/**
  * Returns the home directory.
- * If GEMINI_CLI_HOME environment variable is set, it returns its value.
- * Otherwise, it returns the user's home directory.
+ * If GXDE_AI_CORE_HOME is set, it takes precedence. Otherwise, if
+ * GEMINI_CLI_HOME is set, it returns its value. Otherwise, it returns the
+ * user's home directory.
  */
 export function homedir(): string {
-  const envHome = process.env['GEMINI_CLI_HOME'];
+  const envHome =
+    process.env['GXDE_AI_CORE_HOME'] || process.env['GEMINI_CLI_HOME'];
   if (envHome) {
     return envHome;
   }

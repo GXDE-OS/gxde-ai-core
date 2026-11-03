@@ -9,11 +9,13 @@ import * as path from 'node:path';
 import { randomUUID } from 'node:crypto';
 import lockfile from 'proper-lockfile';
 import { z } from 'zod';
-import { homedir, GEMINI_DIR } from '../utils/paths.js';
+import { homedir, GEMINI_DIR, getKeychainServiceName } from '../utils/paths.js';
 import { HybridTokenStorage } from '../mcp/token-storage/hybrid-token-storage.js';
 import type { ProviderAccount } from './types.js';
 
-const credentials = new HybridTokenStorage('hachimi-provider-accounts');
+const credentials = new HybridTokenStorage(
+  getKeychainServiceName('hachimi-provider-accounts'),
+);
 
 const accountSchema = z
   .object({
@@ -78,7 +80,7 @@ export function readAccounts(): AccountStore {
     }
 
     throw new Error(
-      'Cannot read Hachimi accounts. Check ~/.gemini/hachimi-accounts.json.',
+      `Cannot read Hachimi accounts. Check ${accountStorePath()}.`,
       { cause: error },
     );
   }

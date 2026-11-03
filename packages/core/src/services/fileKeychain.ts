@@ -9,7 +9,7 @@ import * as path from 'node:path';
 import * as os from 'node:os';
 import * as crypto from 'node:crypto';
 import type { Keychain } from './keychainTypes.js';
-import { GEMINI_DIR, homedir } from '../utils/paths.js';
+import { GEMINI_DIR, homedir, isIsolatedConfig } from '../utils/paths.js';
 
 export class FileKeychain implements Keychain {
   private readonly tokenFilePath: string;
@@ -17,13 +17,19 @@ export class FileKeychain implements Keychain {
 
   constructor() {
     const configDir = path.join(homedir(), GEMINI_DIR);
-    this.tokenFilePath = path.join(configDir, 'gemini-credentials.json');
+    this.tokenFilePath = path.join(
+      configDir,
+      isIsolatedConfig()
+        ? 'gxde-ai-core-credentials.json'
+        : 'gemini-credentials.json',
+    );
     this.encryptionKey = this.deriveEncryptionKey();
   }
 
   private deriveEncryptionKey(): Buffer {
-    const salt = `${os.hostname()}-${os.userInfo().username}-gemini-cli`;
-    return crypto.scryptSync('gemini-cli-oauth', salt, 32);
+    const appName = isIsolatedConfig() ? 'gxde-ai-core' : 'gemini-cli';
+    const salt = `${os.hostname()}-${os.userInfo().username}-${appName}`;
+    return crypto.scryptSync(`${appName}-oauth`, salt, 32);
   }
 
   private encrypt(text: string): string {

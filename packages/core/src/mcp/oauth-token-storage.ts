@@ -19,6 +19,7 @@ import {
   DEFAULT_SERVICE_NAME,
   FORCE_ENCRYPTED_FILE_ENV_VAR,
 } from './token-storage/index.js';
+import { getKeychainServiceName } from '../utils/paths.js';
 
 /**
  * Class for managing OAuth token storage and retrieval.
@@ -33,7 +34,7 @@ export class MCPOAuthTokenStorage implements TokenStorage {
 
   constructor(
     tokenFilePath?: string,
-    serviceName: string = DEFAULT_SERVICE_NAME,
+    serviceName: string = getKeychainServiceName(DEFAULT_SERVICE_NAME),
   ) {
     this.customTokenFilePath = tokenFilePath;
     this.hybridTokenStorage = new HybridTokenStorage(serviceName);

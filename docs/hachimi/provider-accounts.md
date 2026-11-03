@@ -74,11 +74,18 @@ permissions. API keys are stored separately under the
 fallback where a system keychain is unavailable. They are not stored in account
 metadata, shown in review screens, or placed in command history.
 
-`GEMINI_CLI_HOME` also relocates this storage. Existing `GEMINI.md`, `.gemini/`,
-and `~/.gemini/settings.json` behavior remains compatible. Provider selection is
-applied to Hachimi's in-memory settings; it does not overwrite the saved
-authentication type or preferred model. Enforced authentication and external
-authentication settings take precedence over provider accounts.
+The packaged `gxde-ai-core` and `hachimi` launchers enable isolated
+configuration. They use `~/.gxde-ai-core/` instead of `~/.gemini/` and prefix
+keychain entries with `gxde-ai-core-`, so settings, accounts, history,
+extensions and credentials do not overlap with Gemini CLI or Hachimi CLI. Set
+`GXDE_AI_CORE_HOME` to change the base directory.
+
+`GEMINI_CLI_HOME` also relocates this storage for source and npm installs.
+Existing `GEMINI.md`, `.gemini/`, and `~/.gemini/settings.json` behavior remains
+compatible. Provider selection is applied to Hachimi's in-memory settings; it
+does not overwrite the saved authentication type or preferred model. Enforced
+authentication and external authentication settings take precedence over
+provider accounts.
 
 OpenAI-compatible and Anthropic routes support streamed text, tool calls and
 inline images. Embeddings, remote file URIs and Gemini built-in tools (such as

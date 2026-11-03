@@ -182,6 +182,7 @@ describe('Settings Loading and Merging', () => {
   beforeEach(() => {
     vi.resetAllMocks();
     resetSettingsCacheForTesting();
+    vi.stubEnv('GEMINI_CLI_HOME', path.resolve('/mock/home/user'));
 
     mockFsExistsSync = vi.mocked(fs.existsSync);
     mockFsMkdirSync = vi.mocked(fs.mkdirSync);

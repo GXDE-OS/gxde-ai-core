@@ -225,7 +225,11 @@ function main() {
   cpSync(distDir, libDir, { recursive: true });
   chmodSync(join(libDir, 'gxde-ai-core'), 0o755);
 
-  symlinkSync('../lib/gxde-ai-core/gxde-ai-core', join(binDir, 'gxde-ai-core'));
+  cpSync(
+    join(root, 'packaging', 'gxde-ai-core.sh'),
+    join(binDir, 'gxde-ai-core'),
+  );
+  chmodSync(join(binDir, 'gxde-ai-core'), 0o755);
   symlinkSync('gxde-ai-core', join(binDir, 'hachimi'));
 
   const licensePath = join(root, 'LICENSE');

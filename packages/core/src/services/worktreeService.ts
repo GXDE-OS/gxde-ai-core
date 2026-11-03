@@ -9,6 +9,7 @@ import * as fs from 'node:fs/promises';
 import { realpathSync } from 'node:fs';
 import { execa } from 'execa';
 import { debugLogger } from '../utils/debugLogger.js';
+import { GEMINI_DIR } from '../utils/paths.js';
 import { getSafeGitEnv } from '../utils/gitUtils.js';
 
 export interface WorktreeInfo {
@@ -115,7 +116,7 @@ export async function getProjectRootForWorktree(cwd: string): Promise<string> {
 }
 
 export function getWorktreePath(projectRoot: string, name: string): string {
-  return path.join(projectRoot, '.gemini', 'worktrees', name);
+  return path.join(projectRoot, GEMINI_DIR, 'worktrees', name);
 }
 
 export async function createWorktree(
@@ -140,7 +141,11 @@ export function isGeminiWorktree(
   try {
     const realDirPath = realpathSync(dirPath);
     const realProjectRoot = realpathSync(projectRoot);
-    const worktreesBaseDir = path.join(realProjectRoot, '.gemini', 'worktrees');
+    const worktreesBaseDir = path.join(
+      realProjectRoot,
+      GEMINI_DIR,
+      'worktrees',
+    );
     const relative = path.relative(worktreesBaseDir, realDirPath);
     return !relative.startsWith('..') && !path.isAbsolute(relative);
   } catch {

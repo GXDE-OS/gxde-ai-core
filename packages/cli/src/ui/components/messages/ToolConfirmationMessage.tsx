@@ -19,6 +19,7 @@ import {
   ApprovalMode,
   hasRedirection,
   debugLogger,
+  GEMINI_DIR,
 } from '@google/gemini-cli-core';
 import { useToolActions } from '../../contexts/ToolActionsContext.js';
 import {
@@ -1008,7 +1009,7 @@ export const ToolConfirmationMessage: React.FC<
           <Text color={titleColor} wrap="truncate">
             {item.label}{' '}
             <Text color={theme.text.secondary}>
-              ~/.gemini/policies/auto-saved.toml
+              ~/{GEMINI_DIR}/policies/auto-saved.toml
             </Text>
           </Text>
         );

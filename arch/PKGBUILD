@@ -63,7 +63,8 @@ package() {
   chmod 0755 "$pkgdir/usr/lib/gxde-ai-core/gxde-ai-core"
 
   install -d "$pkgdir/usr/bin"
-  ln -s ../lib/gxde-ai-core/gxde-ai-core "$pkgdir/usr/bin/gxde-ai-core"
+  install -m 0755 "$srcdir/$pkgname-$pkgver/packaging/gxde-ai-core.sh" \
+    "$pkgdir/usr/bin/gxde-ai-core"
   ln -s gxde-ai-core "$pkgdir/usr/bin/hachimi"
 
   install -Dm644 LICENSE "$pkgdir/usr/share/licenses/$pkgname/LICENSE"

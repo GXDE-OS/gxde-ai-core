@@ -4,16 +4,20 @@
  * SPDX-License-Identifier: Apache-2.0
  */
 
-import { isWithinRoot, type FileSystemService } from '@google/gemini-cli-core';
+import {
+  GEMINI_DIR,
+  homedir,
+  isWithinRoot,
+  type FileSystemService,
+} from '@google/gemini-cli-core';
 import type * as acp from '@agentclientprotocol/sdk';
-import os from 'node:os';
 import path from 'node:path';
 
 /**
  * ACP client-based implementation of FileSystemService
  */
 export class AcpFileSystemService implements FileSystemService {
-  private readonly geminiDir = path.join(os.homedir(), '.gemini');
+  private readonly geminiDir = path.join(homedir(), GEMINI_DIR);
 
   constructor(
     private readonly connection: acp.AgentSideConnection,

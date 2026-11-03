@@ -36,6 +36,7 @@ import {
   AGENT_TOOL_NAME,
 } from '../tools/tool-names.js';
 import type { HierarchicalMemory } from '../config/memory.js';
+import { GEMINI_DIR } from '../utils/paths.js';
 import { DEFAULT_CONTEXT_FILENAME } from '../tools/memoryTool.js';
 import type { ApprovalMode } from '../policy/types.js';
 
@@ -536,7 +537,7 @@ export function renderUserMemory(
 # Contextual Instructions (${formattedHeader})
 The following content is loaded from local and global configuration files.
 **Context Precedence:**
-- **Global (~/.gemini/):** foundational user preferences. Apply these broadly.
+- **Global (~/${GEMINI_DIR}/):** foundational user preferences. Apply these broadly.
 - **Extensions:** supplementary knowledge and capabilities.
 - **Workspace Root:** workspace-wide mandates. Supersedes global preferences.
 - **Sub-directories:** highly specific overrides. These rules supersede all others for files within their scope.

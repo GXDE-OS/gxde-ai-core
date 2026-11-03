@@ -10,7 +10,7 @@ import { OAUTH_FILE } from '../config/storage.js';
 import type { OAuthCredentials } from '../mcp/token-storage/types.js';
 import * as path from 'node:path';
 import { promises as fs } from 'node:fs';
-import { GEMINI_DIR, homedir } from '../utils/paths.js';
+import { GEMINI_DIR, homedir, getKeychainServiceName } from '../utils/paths.js';
 import { coreEvents } from '../utils/events.js';
 
 const KEYCHAIN_SERVICE_NAME = 'gemini-cli-oauth';
@@ -18,7 +18,7 @@ const MAIN_ACCOUNT_KEY = 'main-account';
 
 export class OAuthCredentialStorage {
   private static storage: HybridTokenStorage = new HybridTokenStorage(
-    KEYCHAIN_SERVICE_NAME,
+    getKeychainServiceName(KEYCHAIN_SERVICE_NAME),
   );
 
   /**

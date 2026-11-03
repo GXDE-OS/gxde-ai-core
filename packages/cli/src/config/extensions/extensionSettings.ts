@@ -13,7 +13,11 @@ import { ExtensionStorage } from './storage.js';
 import type { ExtensionConfig } from '../extension.js';
 
 import prompts from 'prompts';
-import { debugLogger, KeychainTokenStorage } from '@google/gemini-cli-core';
+import {
+  debugLogger,
+  getKeychainServiceName,
+  KeychainTokenStorage,
+} from '@google/gemini-cli-core';
 import { EXTENSION_SETTINGS_FILENAME } from './variables.js';
 
 export enum ExtensionSettingScope {
@@ -40,9 +44,9 @@ const getKeychainStorageName = (
     if (!workspaceDir) {
       throw new Error('Workspace directory is required for workspace scope');
     }
-    return `${base} ${workspaceDir}`;
+    return getKeychainServiceName(`${base} ${workspaceDir}`);
   }
-  return base;
+  return getKeychainServiceName(base);
 };
 
 export const getEnvFilePath = (

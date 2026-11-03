@@ -22,7 +22,11 @@ import { type ExtensionInstallMetadata } from '../config.js';
 import { KeychainService } from '../../services/keychainService.js';
 import { isNodeError, getErrorMessage } from '../../utils/errors.js';
 import { debugLogger } from '../../utils/debugLogger.js';
-import { homedir, GEMINI_DIR } from '../../utils/paths.js';
+import {
+  homedir,
+  GEMINI_DIR,
+  getKeychainServiceName,
+} from '../../utils/paths.js';
 import stableStringify from 'json-stable-stringify';
 import {
   type IExtensionIntegrity,
@@ -47,7 +51,9 @@ class IntegrityKeyManager {
   constructor() {
     const configDir = path.join(homedir(), GEMINI_DIR);
     this.fallbackKeyPath = path.join(configDir, INTEGRITY_KEY_FILENAME);
-    this.keychainService = new KeychainService(KEYCHAIN_SERVICE_NAME);
+    this.keychainService = new KeychainService(
+      getKeychainServiceName(KEYCHAIN_SERVICE_NAME),
+    );
   }
 
   /**

@@ -10,7 +10,7 @@ import fs from 'node:fs';
 import path from 'node:path';
 import { execFileSync, spawn as nodeSpawn } from 'node:child_process';
 import chalk from 'chalk';
-import { debugLogger } from '@google/gemini-cli-core';
+import { debugLogger, GEMINI_DIR } from '@google/gemini-cli-core';
 import { loadSettings, SettingScope } from '../../config/settings.js';
 import { exitCli } from '../utils.js';
 import {
@@ -364,9 +364,11 @@ async function handleSetup(argv: SetupArgs): Promise<number> {
     });
 
     log(chalk.green('  ✓ Settings updated'));
-    log(chalk.dim('    User (~/.gemini/settings.json): autoStartServer'));
+    log(chalk.dim(`    User (~/${GEMINI_DIR}/settings.json): autoStartServer`));
     log(
-      chalk.dim('    Workspace (.gemini/settings.json): enabled, classifier'),
+      chalk.dim(
+        `    Workspace (${GEMINI_DIR}/settings.json): enabled, classifier`,
+      ),
     );
     settingsUpdated = true;
   } catch (error) {
@@ -376,7 +378,7 @@ async function handleSetup(argv: SetupArgs): Promise<number> {
       ),
     );
     logError(
-      '  You can manually add the configuration to ~/.gemini/settings.json',
+      `  You can manually add the configuration to ~/${GEMINI_DIR}/settings.json`,
     );
   }
 

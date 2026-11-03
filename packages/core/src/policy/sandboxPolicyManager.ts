@@ -6,13 +6,16 @@
 
 import fs from 'node:fs';
 import path from 'node:path';
-import os from 'node:os';
 import toml from '@iarna/toml';
 import { z } from 'zod';
 import { fileURLToPath } from 'node:url';
 import { debugLogger } from '../utils/debugLogger.js';
 import { type SandboxPermissions } from '../services/sandboxManager.js';
-import { deduplicateAbsolutePaths } from '../utils/paths.js';
+import {
+  deduplicateAbsolutePaths,
+  GEMINI_DIR,
+  homedir,
+} from '../utils/paths.js';
 import { normalizeCommand } from '../utils/shell-utils.js';
 
 export const SandboxModeConfigSchema = z.object({
@@ -101,7 +104,7 @@ export class SandboxPolicyManager {
   constructor(customConfigPath?: string) {
     this.configPath =
       customConfigPath ??
-      path.join(os.homedir(), '.gemini', 'policies', 'sandbox.toml');
+      path.join(homedir(), GEMINI_DIR, 'policies', 'sandbox.toml');
     this.config = this.loadConfig();
   }
 

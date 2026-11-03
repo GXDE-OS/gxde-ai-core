@@ -16,6 +16,7 @@ import {
   WRITE_FILE_TOOL_NAME,
 } from '../tools/tool-names.js';
 import { PREVIEW_GEMINI_FLASH_MODEL } from '../config/models.js';
+import { GEMINI_DIR } from '../utils/paths.js';
 
 const SkillExtractionSchema = z.object({
   response: z
@@ -63,7 +64,7 @@ function buildSystemPrompt(skillsDir: string, memoryDir: string): string {
     '- private  -> targets must live under the project memory directory',
     `             (${memoryDir}). Use this for project-scoped private memory.`,
     '- global   -> the target MUST be exactly the single global personal memory',
-    '             file ~/.gemini/GEMINI.md. No other files in ~/.gemini/ are',
+    `             file ~/${GEMINI_DIR}/GEMINI.md. No other files in ~/${GEMINI_DIR}/ are`,
     '             writeable; sibling .md files do not exist for the global tier.',
     '',
     'IMPORTANT — incremental updates:',
@@ -79,7 +80,7 @@ function buildSystemPrompt(skillsDir: string, memoryDir: string): string {
     'project root) are NOT auto-extractable. They are managed by humans only; do',
     'not write patches that target files under the project root.',
     '',
-    'NEVER directly edit MEMORY.md, GEMINI.md, ~/.gemini/GEMINI.md, settings,',
+    `NEVER directly edit MEMORY.md, GEMINI.md, ~/${GEMINI_DIR}/GEMINI.md, settings,`,
     'credentials, or any file outside the memory work directory. The only way to',
     'update memory is via a `.patch` file in the appropriate `.inbox/<kind>/` folder.',
     '',

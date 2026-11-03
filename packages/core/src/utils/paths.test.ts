@@ -23,6 +23,9 @@ import {
   resolveDefensiveToolPath,
   hasBlockedPathSegment,
   stripExtendedLengthPrefix,
+  getKeychainServiceName,
+  homedir,
+  isIsolatedConfig,
 } from './paths.js';
 
 vi.mock('node:fs', async (importOriginal) => {
@@ -1038,6 +1041,41 @@ describe('normalizePath', () => {
       expect(hasBlockedPathSegment('gh1a2b~1.json')).toBe(true);
       expect(hasBlockedPathSegment('gha-cr~1.jso')).toBe(true);
       expect(hasBlockedPathSegment('gh1a2b~1.jso')).toBe(true);
+    });
+  });
+
+  describe('configuration isolation', () => {
+    afterEach(() => {
+      vi.unstubAllEnvs();
+    });
+
+    it('uses GXDE_AI_CORE_HOME and scopes keychain names', () => {
+      vi.stubEnv('GXDE_AI_CORE_HOME', '/tmp/gxde-ai-core-home');
+
+      expect(homedir()).toBe('/tmp/gxde-ai-core-home');
+      expect(isIsolatedConfig()).toBe(true);
+      expect(getKeychainServiceName('gemini-cli-oauth')).toBe(
+        'gxde-ai-core-gemini-cli-oauth',
+      );
+    });
+
+    it('falls back to GEMINI_CLI_HOME without isolating keychain names', () => {
+      vi.stubEnv('GXDE_AI_CORE_HOME', '');
+      vi.stubEnv('GEMINI_CLI_HOME', '/tmp/gemini-cli-home');
+
+      expect(homedir()).toBe('/tmp/gemini-cli-home');
+      expect(isIsolatedConfig()).toBe(false);
+      expect(getKeychainServiceName('gemini-cli-oauth')).toBe(
+        'gemini-cli-oauth',
+      );
+    });
+
+    it('uses the .gxde-ai-core config directory when isolated', async () => {
+      vi.resetModules();
+      vi.stubEnv('GXDE_AI_CORE_HOME', '/tmp/gxde-ai-core-home');
+
+      const isolatedPaths = await import('./paths.js');
+      expect(isolatedPaths.GEMINI_DIR).toBe('.gxde-ai-core');
     });
   });
 });

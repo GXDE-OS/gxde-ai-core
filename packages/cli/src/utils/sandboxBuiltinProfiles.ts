@@ -4,6 +4,8 @@
  * SPDX-License-Identifier: Apache-2.0
  */
 
+import { GEMINI_DIR } from '@google/gemini-cli-core';
+
 export const BUILTIN_SEATBELT_PROFILE_CONTENTS: Record<string, string> = {
   'permissive-open': `(version 1)
 (deny default)
@@ -989,3 +991,16 @@ BUILTIN_SEATBELT_PROFILE_CONTENTS['permissive-closed'] =
   BUILTIN_SEATBELT_PROFILE_CONTENTS['strict-open'];
 BUILTIN_SEATBELT_PROFILE_CONTENTS['restrictive-closed'] =
   BUILTIN_SEATBELT_PROFILE_CONTENTS['strict-proxied'];
+
+// The profiles above are written for the legacy .gemini directory. Rewrite
+// their config paths when the packaged isolated configuration is active.
+if (GEMINI_DIR !== '.gemini') {
+  for (const [name, contents] of Object.entries(
+    BUILTIN_SEATBELT_PROFILE_CONTENTS,
+  )) {
+    BUILTIN_SEATBELT_PROFILE_CONTENTS[name] = contents.replaceAll(
+      '/.gemini',
+      `/${GEMINI_DIR}`,
+    );
+  }
+}

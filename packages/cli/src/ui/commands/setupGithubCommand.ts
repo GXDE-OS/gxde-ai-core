@@ -23,7 +23,7 @@ import {
   type SlashCommandActionReturn,
 } from './types.js';
 import { getUrlOpenCommand } from '../../ui/utils/commandUtils.js';
-import { debugLogger } from '@google/gemini-cli-core';
+import { debugLogger, GEMINI_DIR } from '@google/gemini-cli-core';
 
 export const GITHUB_WORKFLOW_PATHS = [
   'gemini-dispatch/gemini-dispatch.yml',
@@ -67,7 +67,7 @@ function getOpenUrlsCommands(readmeUrl: string): string[] {
 
 // Add Gemini CLI specific entries to .gitignore file
 export async function updateGitignore(gitRepoRoot: string): Promise<void> {
-  const gitignoreEntries = ['.gemini/', 'gha-creds-*.json'];
+  const gitignoreEntries = [`${GEMINI_DIR}/`, 'gha-creds-*.json'];
 
   const gitignorePath = path.join(gitRepoRoot, '.gitignore');
   try {

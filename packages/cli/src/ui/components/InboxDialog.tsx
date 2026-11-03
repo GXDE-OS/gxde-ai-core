@@ -43,6 +43,7 @@ import {
   applyInboxMemoryPatch,
   dismissInboxMemoryPatch,
   isProjectSkillPatchTarget,
+  GEMINI_DIR,
 } from '@google/gemini-cli-core';
 
 type Phase =
@@ -80,12 +81,12 @@ const SKILL_DESTINATION_CHOICES: DestinationChoice[] = [
   {
     destination: 'global',
     label: 'Global',
-    description: '~/.gemini/skills — available in all projects',
+    description: `~/${GEMINI_DIR}/skills — available in all projects`,
   },
   {
     destination: 'project',
     label: 'Project',
-    description: '.gemini/skills — available in this workspace',
+    description: `${GEMINI_DIR}/skills — available in this workspace`,
   },
 ];
 
@@ -182,13 +183,13 @@ function getSkillOriginTag(filePath: string): string {
   if (normalizedPath.includes('/extensions/')) {
     return 'Extension';
   }
-  if (normalizedPath.includes('/.gemini/skills/')) {
+  if (normalizedPath.includes(`/${GEMINI_DIR}/skills/`)) {
     const homeDirs = [process.env['HOME'], process.env['USERPROFILE']]
       .filter((homeDir): homeDir is string => Boolean(homeDir))
       .map(normalizePathForUi);
     if (
       homeDirs.some((homeDir) =>
-        normalizedPath.startsWith(`${homeDir}/.gemini/skills/`),
+        normalizedPath.startsWith(`${homeDir}/${GEMINI_DIR}/skills/`),
       )
     ) {
       return 'Global';
@@ -457,8 +458,7 @@ export const InboxDialog: React.FC<InboxDialogProps> = ({
             key: choice.destination,
             value: {
               ...choice,
-              description:
-                '.gemini/skills — unavailable until this workspace is trusted',
+              description: `${GEMINI_DIR}/skills — unavailable until this workspace is trusted`,
             },
             disabled: true,
           };
@@ -492,8 +492,7 @@ export const InboxDialog: React.FC<InboxDialogProps> = ({
             key: choice.action,
             value: {
               ...choice,
-              description:
-                '.gemini/skills — unavailable until this workspace is trusted',
+              description: `${GEMINI_DIR}/skills — unavailable until this workspace is trusted`,
             },
             disabled: true,
           };
