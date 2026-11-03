@@ -151,11 +151,8 @@ package "Programs" as programs {
     + flag providers_dir : std::string
   }
 
-  class Ctl <<gxde-ai-ctl>> {
-    - stub_ : std::unique_ptr<AccountService::Stub>
-    + Run(args : const Args&) : absl::Status
-    - RunAccount(verb : absl::string_view, args : const Args&) : absl::Status
-    - RunModel(verb : absl::string_view, args : const Args&) : absl::Status
+  class "Local client" as LocalClient <<any program>> {
+    + channel : unix:$XDG_RUNTIME_DIR/gxde-ai-core.sock
   }
 }
 
@@ -163,6 +160,8 @@ package "Server" as server {
   class AccountServiceImpl {
     - store_ : const AccountStore*
     - detector_ : const ModelDetector*
+    - status_handler_ : utils::StatusHandler
+    - uuid_ : utils::Uuid
     - mutex_ : absl::Mutex
     + CreateAccount(context : grpc::ServerContext*, request : const CreateAccountRequest*, response : AgentAccount*) : grpc::Status
     + GetAccount(context : grpc::ServerContext*, request : const GetAccountRequest*, response : AgentAccount*) : grpc::Status
@@ -225,26 +224,24 @@ package "Accounts" as accounts {
   }
 }
 
-package "Core" as core {
-  class paths <<functions>> {
+package "Utils" as utils {
+  class PathHandler {
     + ConfigHome() : absl::StatusOr<std::string>
     + DefaultProvidersDir() : absl::StatusOr<std::string>
     + DefaultSocketPath() : std::string
     + ToGrpcAddress(socket_path : absl::string_view) : std::string
   }
 
-  class uuid <<functions>> {
-    + NewUuid() : std::string
-    + IsValidUuid(text : absl::string_view) : bool
+  class Uuid {
+    + GenUuid() : std::string
+    + IsUuidValid(uuid_in : absl::string_view) : bool
   }
 
-  class status_util <<functions>> {
+  class StatusHandler {
     + ToGrpcStatus(status : const absl::Status&) : grpc::Status
     + FromGrpcStatus(status : const grpc::Status&) : absl::Status
   }
-}
 
-package "Net" as net {
   interface HttpClient {
     + {abstract} Get(url : const std::string&, headers : const HttpHeaders&) : absl::StatusOr<HttpResponse>
   }
@@ -279,20 +276,20 @@ ModelMatch *-- ModelDescriptor
 DetectModelsResponse *-- AgentAccount
 
 AccountServiceBase <|-- AccountServiceImpl
-Ctl --> AccountServiceStub : calls over UNIX socket
+LocalClient --> AccountServiceStub : gRPC over UNIX socket
 AccountServiceStub ..> AccountServiceBase : gRPC + protobuf
 
 ServerMain *-- AccountStore
 ServerMain *-- CurlHttpClient
 ServerMain *-- HttpModelDetector
 ServerMain *-- AccountServiceImpl
-ServerMain ..> paths : resolves directories with
+ServerMain --> PathHandler : resolves directories with
 
 AccountServiceImpl --> AccountStore : loads and saves with
 AccountServiceImpl --> ModelDetector : detects models with
 AccountServiceImpl ..> provider_defaults : fills defaults with
-AccountServiceImpl ..> uuid : assigns model UUIDs with
-AccountServiceImpl ..> status_util
+AccountServiceImpl *-- Uuid : assigns model UUIDs with
+AccountServiceImpl *-- StatusHandler : maps errors with
 
 AccountStore ..> AgentAccount : one {id}.textproto each
 
@@ -330,6 +327,13 @@ note bottom of AccountServiceImpl
   saving the file. Client-supplied UUIDs are ignored,
   and UpdateModel rejects the "id" and "uuid" paths.
   Network calls are made without holding mutex_.
+end note
+
+note right of LocalClient
+  No bundled CLI. Any program talks to
+  gxde-ai-core directly: generate stubs from
+  proto/account_service.proto and connect to
+  the UNIX socket (see example/grpc_proto_ipc).
 end note
 
 note bottom of ResolvedModel
