@@ -47,7 +47,7 @@ describe('GetIdentityTool', () => {
       [
         'Model: glm-5',
         'Provider: Alibaba ModelStudio · Coding Plan',
-        'Hachimi CLI version: 1.2.3',
+        'GXDE AI Core version: 1.2.3',
       ].join('\n'),
     );
     expect(result.returnDisplay).toBe(

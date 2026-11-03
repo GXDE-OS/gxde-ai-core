@@ -145,7 +145,7 @@ export function useRunEventNotifications({
       notificationsEnabled,
       buildRunEventNotificationContent({
         type: 'session_complete',
-        detail: 'Hachimi CLI finished responding.',
+        detail: 'GXDE AI Core finished responding.',
       }),
       notificationMethod,
     );

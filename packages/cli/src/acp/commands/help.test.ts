@@ -39,7 +39,7 @@ describe('HelpCommand', () => {
 
     const data = response.data as string;
 
-    expect(data).toContain('Hachimi CLI Help:');
+    expect(data).toContain('GXDE AI Core Help:');
     expect(data).toContain('### Basics');
     expect(data).toContain('### Commands');
 

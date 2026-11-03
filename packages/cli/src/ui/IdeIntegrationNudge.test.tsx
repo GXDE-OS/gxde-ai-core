@@ -60,7 +60,7 @@ describe('IdeIntegrationNudge', () => {
     );
     const frame = lastFrame();
 
-    expect(frame).toContain('Do you want to connect VS Code to Hachimi CLI?');
+    expect(frame).toContain('Do you want to connect VS Code to GXDE AI Core?');
     expect(frame).toContain('Yes');
     expect(frame).toContain('No (esc)');
     expect(frame).toContain("No, don't ask again");

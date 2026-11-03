@@ -67,7 +67,7 @@ export const LogoutConfirmationDialog: React.FC<
             You are now signed out
           </Text>
           <Text color={theme.text.secondary}>
-            Sign in again to continue using Hachimi CLI, or exit the
+            Sign in again to continue using GXDE AI Core, or exit the
             application.
           </Text>
         </Box>

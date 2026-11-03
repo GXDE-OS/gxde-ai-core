@@ -472,7 +472,7 @@ export async function terminalSetup(): Promise<TerminalSetupResult> {
 }
 
 export const TERMINAL_SETUP_CONSENT_MESSAGE =
-  'Hachimi CLI works best with Shift+Enter/Ctrl+Enter for multiline input. ' +
+  'GXDE AI Core works best with Shift+Enter/Ctrl+Enter for multiline input. ' +
   'Would you like to automatically configure your terminal keybindings?';
 
 export function formatTerminalSetupResultMessage(

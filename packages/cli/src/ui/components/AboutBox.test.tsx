@@ -30,7 +30,7 @@ describe('AboutBox', () => {
       <AboutBox {...defaultProps} />,
     );
     const output = lastFrame();
-    expect(output).toContain('About Hachimi CLI');
+    expect(output).toContain('About GXDE AI Core');
     expect(output).toContain('1.0.0');
     expect(output).toContain('mock-commit-hash');
     expect(output).toContain('gemini-pro');

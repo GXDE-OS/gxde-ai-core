@@ -273,7 +273,7 @@ export async function handleMigrateFromClaude() {
 
 export const migrateCommand: CommandModule = {
   command: 'migrate',
-  describe: 'Migrate hooks from Claude Code to Hachimi CLI',
+  describe: 'Migrate hooks from Claude Code to GXDE AI Core',
   builder: (yargs) =>
     yargs.option('from-claude', {
       describe: 'Migrate from Claude Code hooks',
@@ -287,7 +287,7 @@ export const migrateCommand: CommandModule = {
       await handleMigrateFromClaude();
     } else {
       debugLogger.log(
-        'Usage: gemini hooks migrate --from-claude\n\nMigrate hooks from Claude Code to Hachimi CLI format.',
+        'Usage: gxde-ai-core hooks migrate --from-claude\n\nMigrate hooks from Claude Code to GXDE AI Core format.',
       );
     }
     await exitCli();

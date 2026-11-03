@@ -464,7 +464,7 @@ describe('Gemini Client (client.ts)', () => {
 
       // The first message should be the environment context
       expect(history[0].role).toBe('user');
-      expect(history[0].parts?.[0]?.text).toContain('This is the Hachimi CLI');
+      expect(history[0].parts?.[0]?.text).toContain('This is the GXDE AI Core');
       expect(history[0].parts?.[0]?.text).toContain(
         "The project's temporary directory is:",
       );
@@ -1649,7 +1649,7 @@ ${JSON.stringify(
           remainingTokenCount,
         },
       });
-      expect(tokenLimit).toHaveBeenCalledWith(STICKY_MODEL);
+      expect(tokenLimit).toHaveBeenCalledWith(STICKY_MODEL, undefined);
       expect(mockTurnRunFn).not.toHaveBeenCalled();
     });
 

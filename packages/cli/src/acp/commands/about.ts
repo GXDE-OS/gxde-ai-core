@@ -61,7 +61,7 @@ export class AboutCommand implements Command {
 
     return {
       name: this.name,
-      data: `Hachimi CLI Info:\n${info}`,
+      data: `GXDE AI Core Info:\n${info}`,
     };
   }
 }

@@ -28,7 +28,7 @@ export class HelpCommand implements Command {
 
     const lines: string[] = [];
 
-    lines.push('Hachimi CLI Help:');
+    lines.push('GXDE AI Core Help:');
     lines.push('');
     lines.push('### Basics');
     lines.push(

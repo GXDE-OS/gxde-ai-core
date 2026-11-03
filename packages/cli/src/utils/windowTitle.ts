@@ -45,7 +45,7 @@ export function computeTerminalTitle({
   let displayContext = process.env['CLI_TITLE'] || folderName;
 
   if (!useDynamicTitle) {
-    const base = 'Hachimi CLI ';
+    const base = 'GXDE AI Core ';
     // Max context length is 80 - base.length - 2 (for brackets)
     const maxContextLen = MAX_LEN - base.length - 2;
     displayContext = truncate(displayContext, maxContextLen);

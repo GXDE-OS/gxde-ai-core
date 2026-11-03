@@ -37,7 +37,7 @@ describe('AppHeader Icon Rendering', () => {
     await result.waitUntilReady();
 
     expect(result.lastFrame()).not.toContain('█');
-    expect(result.lastFrame()).toContain('Hachimi CLI');
+    expect(result.lastFrame()).toContain('GXDE AI Core');
   });
 
   it('hides the logo by default in Apple Terminal', async () => {
@@ -47,6 +47,6 @@ describe('AppHeader Icon Rendering', () => {
     await result.waitUntilReady();
 
     expect(result.lastFrame()).not.toContain('█');
-    expect(result.lastFrame()).toContain('Hachimi CLI');
+    expect(result.lastFrame()).toContain('GXDE AI Core');
   });
 });

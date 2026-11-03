@@ -46,9 +46,9 @@ function sanitizeNotificationContent(
   const body = sanitizeForDisplay(content.body, MAX_NOTIFICATION_BODY_CHARS);
 
   return {
-    title: title || 'Hachimi CLI',
+    title: title || 'GXDE AI Core',
     subtitle: subtitle || undefined,
-    body: body || 'Open Hachimi CLI for details.',
+    body: body || 'Open GXDE AI Core for details.',
   };
 }
 
@@ -57,14 +57,14 @@ export function buildRunEventNotificationContent(
 ): RunEventNotificationContent {
   if (event.type === 'attention') {
     return sanitizeNotificationContent({
-      title: 'Hachimi CLI needs your attention',
+      title: 'GXDE AI Core needs your attention',
       subtitle: event.heading ?? 'Action required',
-      body: event.detail ?? 'Open Hachimi CLI to continue.',
+      body: event.detail ?? 'Open GXDE AI Core to continue.',
     });
   }
 
   return sanitizeNotificationContent({
-    title: 'Hachimi CLI session complete',
+    title: 'GXDE AI Core session complete',
     subtitle: 'Run finished',
     body: event.detail ?? 'The session finished successfully.',
   });

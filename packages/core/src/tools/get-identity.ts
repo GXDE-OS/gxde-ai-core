@@ -18,7 +18,7 @@ import { PROVIDER_PRESETS } from '../providers/presets.js';
 import { getVersion } from '../utils/version.js';
 
 const DESCRIPTION =
-  'Looks up which model and provider are answering in this session, and the Hachimi CLI version. Use it when the user asks about the model, provider or version instead of guessing, since the model can change mid-session. Answer in your own words, briefly, and mention only what the user asked about.';
+  'Looks up which model and provider are answering in this session, and the GXDE AI Core version. Use it when the user asks about the model, provider or version instead of guessing, since the model can change mid-session. Answer in your own words, briefly, and mention only what the user asked about.';
 
 type GetIdentityParams = Record<string, never>;
 
@@ -84,7 +84,7 @@ class GetIdentityInvocation extends BaseToolInvocation<
       llmContent: [
         `Model: ${model}`,
         `Provider: ${provider}`,
-        `Hachimi CLI version: ${await getVersion()}`,
+        `GXDE AI Core version: ${await getVersion()}`,
       ].join('\n'),
       returnDisplay: `${model} · ${provider}`,
     };

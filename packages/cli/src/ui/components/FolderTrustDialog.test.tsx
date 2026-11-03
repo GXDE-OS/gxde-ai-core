@@ -55,7 +55,7 @@ describe('FolderTrustDialog', () => {
 
     expect(lastFrame()).toContain('Do you trust the files in this folder?');
     expect(lastFrame()).toContain(
-      'Trusting a folder allows Hachimi CLI to load its local configurations',
+      'Trusting a folder allows GXDE AI Core to load its local configurations',
     );
     unmount();
   });
@@ -244,7 +244,7 @@ describe('FolderTrustDialog', () => {
       <FolderTrustDialog onSelect={vi.fn()} isRestarting={true} />,
     );
 
-    expect(lastFrame()).toContain('Hachimi CLI is restarting');
+    expect(lastFrame()).toContain('GXDE AI Core is restarting');
     unmount();
   });
 

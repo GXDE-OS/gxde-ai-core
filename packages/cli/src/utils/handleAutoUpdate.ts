@@ -44,7 +44,7 @@ export async function waitForUpdateCompletion(
   }
 
   debugLogger.log(
-    '\nHachimi CLI is waiting for a background update to complete before restarting...',
+    '\nGXDE AI Core is waiting for a background update to complete before restarting...',
   );
 
   return new Promise((resolve) => {

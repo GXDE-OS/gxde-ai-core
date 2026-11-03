@@ -27,7 +27,7 @@ export function isIsolatedConfig(): boolean {
 /**
  * Scopes a keychain service name to this installation when configuration
  * isolation is enabled, so packaged credentials do not collide with Gemini CLI
- * or Hachimi CLI credentials.
+ * or GXDE AI Core credentials.
  */
 export function getKeychainServiceName(baseName: string): string {
   return isIsolatedConfig() ? `gxde-ai-core-${baseName}` : baseName;

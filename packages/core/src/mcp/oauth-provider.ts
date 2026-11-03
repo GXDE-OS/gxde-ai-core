@@ -122,7 +122,7 @@ export class MCPOAuthProvider {
     const redirectUri = getRedirectUri(config, redirectPort);
 
     const registrationRequest: OAuthClientRegistrationRequest = {
-      client_name: 'Gemini CLI MCP Client',
+      client_name: 'GXDE AI Core MCP Client',
       redirect_uris: [redirectUri],
       grant_types: ['authorization_code', 'refresh_token'],
       response_types: ['code'],

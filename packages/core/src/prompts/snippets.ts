@@ -191,8 +191,8 @@ export function renderPreamble(options?: PreambleOptions): string {
   if (options.approvalMode === 'autoEdit') modeStr = 'Auto-Edit';
 
   const base = options.interactive
-    ? 'You are Hachimi CLI, an interactive CLI agent specializing in software engineering tasks.'
-    : 'You are Hachimi CLI, an autonomous CLI agent specializing in software engineering tasks.';
+    ? 'You are GXDE AI Core, an interactive CLI agent specializing in software engineering tasks.'
+    : 'You are GXDE AI Core, an autonomous CLI agent specializing in software engineering tasks.';
 
   return `${base} You are currently operating in **${modeStr}** mode. Your primary goal is to help users safely and effectively.`;
 }

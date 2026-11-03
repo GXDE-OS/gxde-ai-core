@@ -13,7 +13,7 @@ import {
 
 export const settingsCommand: SlashCommand = {
   name: 'settings',
-  description: 'View and edit Hachimi CLI settings',
+  description: 'View and edit GXDE AI Core settings',
   kind: CommandKind.BUILT_IN,
   autoExecute: true,
   action: (_context, _args): OpenDialogActionReturn => ({

@@ -12,7 +12,7 @@ import { initializeOutputListenersAndFlush } from '../gemini.js';
 export const hooksCommand: CommandModule = {
   command: 'hooks <command>',
   aliases: ['hook'],
-  describe: 'Manage Hachimi CLI hooks.',
+  describe: 'Manage GXDE AI Core hooks.',
   builder: (yargs) =>
     yargs
       .middleware((argv) => {

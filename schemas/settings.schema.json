@@ -339,8 +339,8 @@
         },
         "showStatusInTitle": {
           "title": "Show Thoughts in Title",
-          "description": "Show Hachimi CLI model thoughts in the terminal window title during the working phase",
-          "markdownDescription": "Show Hachimi CLI model thoughts in the terminal window title during the working phase\n\n- Category: `UI`\n- Requires restart: `no`\n- Default: `false`",
+          "description": "Show GXDE AI Core model thoughts in the terminal window title during the working phase",
+          "markdownDescription": "Show GXDE AI Core model thoughts in the terminal window title during the working phase\n\n- Category: `UI`\n- Requires restart: `no`\n- Default: `false`",
           "default": false,
           "type": "boolean"
         },
@@ -353,8 +353,8 @@
         },
         "showHomeDirectoryWarning": {
           "title": "Show Home Directory Warning",
-          "description": "Show a warning when running Hachimi CLI in the home directory.",
-          "markdownDescription": "Show a warning when running Hachimi CLI in the home directory.\n\n- Category: `UI`\n- Requires restart: `yes`\n- Default: `true`",
+          "description": "Show a warning when running GXDE AI Core in the home directory.",
+          "markdownDescription": "Show a warning when running GXDE AI Core in the home directory.\n\n- Category: `UI`\n- Requires restart: `yes`\n- Default: `true`",
           "default": true,
           "type": "boolean"
         },
@@ -3648,8 +3648,8 @@
             },
             "autoStartServer": {
               "title": "Auto-start LiteRT Server",
-              "description": "Automatically start the LiteRT-LM server when Hachimi CLI starts and the Gemma router is enabled.",
-              "markdownDescription": "Automatically start the LiteRT-LM server when Hachimi CLI starts and the Gemma router is enabled.\n\n- Category: `Experimental`\n- Requires restart: `yes`\n- Default: `false`",
+              "description": "Automatically start the LiteRT-LM server when GXDE AI Core starts and the Gemma router is enabled.",
+              "markdownDescription": "Automatically start the LiteRT-LM server when GXDE AI Core starts and the Gemma router is enabled.\n\n- Category: `Experimental`\n- Requires restart: `yes`\n- Default: `false`",
               "default": false,
               "type": "boolean"
             },
@@ -4208,7 +4208,7 @@
         },
         "extension": {
           "type": "object",
-          "description": "Metadata describing the Hachimi CLI extension that owns this MCP server.",
+          "description": "Metadata describing the GXDE AI Core extension that owns this MCP server.",
           "additionalProperties": {
             "type": ["string", "boolean", "number"]
           }
@@ -4330,7 +4330,7 @@
     },
     "TelemetrySettings": {
       "type": "object",
-      "description": "Telemetry configuration for Hachimi CLI.",
+      "description": "Telemetry configuration for GXDE AI Core.",
       "additionalProperties": false,
       "properties": {
         "enabled": {
@@ -4434,7 +4434,7 @@
     },
     "CustomTheme": {
       "type": "object",
-      "description": "Custom theme definition used for styling Hachimi CLI output. Colors are provided as hex strings or named ANSI colors.",
+      "description": "Custom theme definition used for styling GXDE AI Core output. Colors are provided as hex strings or named ANSI colors.",
       "additionalProperties": false,
       "properties": {
         "type": {

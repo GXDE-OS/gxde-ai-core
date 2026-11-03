@@ -40,7 +40,7 @@ describe('computeTerminalTitle', () => {
         showThoughts: true,
         useDynamicTitle: false,
       } as TerminalTitleOptions,
-      expected: 'Hachimi CLI (my-project)'.padEnd(80, ' '),
+      expected: 'GXDE AI Core (my-project)'.padEnd(80, ' '),
       exact: true,
     },
     {
@@ -235,7 +235,7 @@ describe('computeTerminalTitle', () => {
     });
 
     expect(title.length).toBe(80);
-    expect(title).toContain('Hachimi CLI (CCCCC');
+    expect(title).toContain('GXDE AI Core (CCCCC');
     expect(title).toContain('…)');
   });
 });

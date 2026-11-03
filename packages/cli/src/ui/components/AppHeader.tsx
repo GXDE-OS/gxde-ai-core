@@ -19,7 +19,7 @@ import { CustomLogo } from './CustomLogo.js';
 import { CliSpinner } from './CliSpinner.js';
 import { getCachedStringWidth } from '../utils/textUtils.js';
 
-const PRODUCT_NAME = 'Hachimi CLI';
+const PRODUCT_NAME = 'GXDE AI Core';
 const UPDATING_LABEL = 'Updating';
 
 interface VersionHeaderProps {

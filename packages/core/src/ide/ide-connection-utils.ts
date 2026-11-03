@@ -34,7 +34,7 @@ export type ConnectionConfig = {
 };
 
 /**
- * Whether this CLI is running inside a Gemini CLI sandbox (the sandbox
+ * Whether this CLI is running inside a GXDE AI Core sandbox (the sandbox
  * launcher sets `SANDBOX` for every sandbox type).
  */
 export function isRunningInSandbox(): boolean {
@@ -48,7 +48,7 @@ export function isRunningInSandbox(): boolean {
  */
 export function getConnectionFailureAdvice(): string {
   return isRunningInSandbox()
-    ? 'Gemini CLI is running inside a sandbox: make sure the extension is installed and running in your IDE, then restart Gemini CLI so the sandbox can bridge the connection.'
+    ? 'GXDE AI Core is running inside a sandbox: make sure the extension is installed and running in your IDE, then restart GXDE AI Core so the sandbox can bridge the connection.'
     : 'Please ensure the extension is running. To install the extension, run /ide install.';
 }
 
@@ -82,7 +82,7 @@ export function validateWorkspacePath(
   if (!isWithinWorkspace) {
     return {
       isValid: false,
-      error: `Directory mismatch. Gemini CLI is running in a different location than the open workspace in the IDE. Please run the CLI from one of the following directories: ${ideWorkspacePaths.join(
+      error: `Directory mismatch. GXDE AI Core is running in a different location than the open workspace in the IDE. Please run the CLI from one of the following directories: ${ideWorkspacePaths.join(
         ', ',
       )}`,
     };

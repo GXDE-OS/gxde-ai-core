@@ -22,7 +22,7 @@ import { defer } from '../deferred.js';
 export const extensionsCommand: CommandModule = {
   command: 'extensions <command>',
   aliases: ['extension'],
-  describe: 'Manage Hachimi CLI extensions.',
+  describe: 'Manage GXDE AI Core extensions.',
   builder: (yargs) =>
     yargs
       .middleware((argv) => {

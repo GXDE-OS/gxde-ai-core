@@ -83,7 +83,7 @@ export async function checkForUpdates(
       const bestUpdate = getBestAvailableUpdate(nightlyUpdate, latestUpdate);
 
       if (bestUpdate && semver.gt(bestUpdate, currentVersion)) {
-        const message = `A new version of Hachimi CLI is available! ${currentVersion} → ${bestUpdate}`;
+        const message = `A new version of GXDE AI Core is available! ${currentVersion} → ${bestUpdate}`;
         const type = semver.diff(bestUpdate, currentVersion) || undefined;
         return {
           message,
@@ -112,7 +112,7 @@ export async function checkForUpdates(
       }
 
       if (semver.gt(latestUpdate, currentVersion)) {
-        const message = `Hachimi CLI update available! ${currentVersion} → ${latestUpdate}`;
+        const message = `GXDE AI Core update available! ${currentVersion} → ${latestUpdate}`;
         const type = semver.diff(latestUpdate, currentVersion) || undefined;
         return {
           message,

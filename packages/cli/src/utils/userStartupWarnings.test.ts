@@ -77,7 +77,7 @@ describe('getUserStartupWarnings', () => {
         expect.objectContaining({
           id: 'home-directory',
           message: expect.stringContaining(
-            'Warning you are running Hachimi CLI in your home directory',
+            'Warning you are running GXDE AI Core in your home directory',
           ),
           priority: WarningPriority.Low,
         }),
@@ -131,7 +131,7 @@ describe('getUserStartupWarnings', () => {
         expect.objectContaining({
           id: 'home-directory',
           message: expect.stringContaining(
-            'Warning you are running Hachimi CLI in your home directory',
+            'Warning you are running GXDE AI Core in your home directory',
           ),
           priority: WarningPriority.Low,
         }),
@@ -201,7 +201,7 @@ describe('getUserStartupWarnings', () => {
       vi.mocked(isFolderTrustEnabled).mockReturnValue(true);
       vi.mocked(isWorkspaceTrusted).mockImplementation(() => {
         throw new FatalUntrustedWorkspaceError(
-          'Hachimi CLI is not running in a trusted directory',
+          'GXDE AI Core is not running in a trusted directory',
         );
       });
       vi.mocked(isHeadlessMode).mockReturnValue(true);

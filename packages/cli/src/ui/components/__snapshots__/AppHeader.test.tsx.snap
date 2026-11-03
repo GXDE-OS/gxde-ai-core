@@ -2,13 +2,13 @@
 
 exports[`<AppHeader /> > should hide the logo by default even when logged out 1`] = `
 "
- Hachimi CLI v1.0.0
+ GXDE AI Core v1.0.0
 "
 `;
 
 exports[`<AppHeader /> > should not render the banner when no flags are set 1`] = `
 "
- Hachimi CLI v1.0.0
+ GXDE AI Core v1.0.0
 
 
 
@@ -22,7 +22,7 @@ Tips for getting started:
 
 exports[`<AppHeader /> > should not render the default banner if shown count is 5 or more 1`] = `
 "
- Hachimi CLI v1.0.0
+ GXDE AI Core v1.0.0
 
 
 
@@ -36,7 +36,7 @@ Tips for getting started:
 
 exports[`<AppHeader /> > should render the banner with default text 1`] = `
 "
- Hachimi CLI v1.0.0
+ GXDE AI Core v1.0.0
 
 
 ╭──────────────────────────────────────────────────────────────────────────────────────────────────╮
@@ -53,7 +53,7 @@ Tips for getting started:
 
 exports[`<AppHeader /> > should render the banner with warning text 1`] = `
 "
- Hachimi CLI v1.0.0
+ GXDE AI Core v1.0.0
 
 
 ╭──────────────────────────────────────────────────────────────────────────────────────────────────╮

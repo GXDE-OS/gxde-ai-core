@@ -52,7 +52,7 @@ const homeDirectoryCheck: WarningCheck = {
           return null;
         }
 
-        return 'Warning you are running Hachimi CLI in your home directory.\nThis warning can be disabled in /settings';
+        return 'Warning you are running GXDE AI Core in your home directory.\nThis warning can be disabled in /settings';
       }
       return null;
     } catch {
@@ -68,7 +68,7 @@ const rootDirectoryCheck: WarningCheck = {
     try {
       const workspaceRealPath = await fs.realpath(workspaceRoot);
       const errorMessage =
-        'Warning: You are running Hachimi CLI in the root directory. Your entire folder structure will be used for context. It is strongly recommended to run in a project-specific directory.';
+        'Warning: You are running GXDE AI Core in the root directory. Your entire folder structure will be used for context. It is strongly recommended to run in a project-specific directory.';
 
       // Check for Unix root directory
       if (path.dirname(workspaceRealPath) === workspaceRealPath) {
@@ -97,7 +97,7 @@ const folderTrustCheck: WarningCheck = {
 
     if (isHeadlessMode()) {
       throw new FatalUntrustedWorkspaceError(
-        'Hachimi CLI is not running in a trusted directory. To proceed, either use `--skip-trust`, ' +
+        'GXDE AI Core is not running in a trusted directory. To proceed, either use `--skip-trust`, ' +
           'set the `GEMINI_CLI_TRUST_WORKSPACE=true` environment variable, or trust this directory in interactive mode. ' +
           'For more details, see https://geminicli.com/docs/cli/trusted-folders/#headless-and-automated-environments',
       );

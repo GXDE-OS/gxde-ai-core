@@ -144,7 +144,7 @@ Installed-Size: ${installedSize}
 Depends: libc6 (>= 2.28), libstdc++6
 Recommends: git, libsecret-1-0
 Description: ${description}
- Hachimi CLI is a terminal AI coding agent with provider-account
+ GXDE AI Core is a terminal AI coding agent with provider-account
  authentication and support for domestic model providers.
 `;
 }

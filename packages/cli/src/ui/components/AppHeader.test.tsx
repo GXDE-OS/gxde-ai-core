@@ -267,7 +267,7 @@ describe('<AppHeader />', () => {
     await waitUntilReady();
 
     expect(lastFrame()).not.toContain('█');
-    expect(lastFrame()).toContain('Hachimi CLI');
+    expect(lastFrame()).toContain('GXDE AI Core');
     expect(lastFrame()).toMatchSnapshot();
     unmount();
   });

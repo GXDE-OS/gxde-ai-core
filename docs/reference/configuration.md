@@ -304,7 +304,7 @@ their corresponding top-level category object in your `settings.json` file.
 
 - **`ui.showStatusInTitle`** (boolean):
 
-  - **Description:** Show Hachimi CLI model thoughts in the terminal window
+  - **Description:** Show GXDE AI Core model thoughts in the terminal window
     title during the working phase
   - **Default:** `false`
 
@@ -316,7 +316,7 @@ their corresponding top-level category object in your `settings.json` file.
 
 - **`ui.showHomeDirectoryWarning`** (boolean):
 
-  - **Description:** Show a warning when running Hachimi CLI in the home
+  - **Description:** Show a warning when running GXDE AI Core in the home
     directory.
   - **Default:** `true`
   - **Requires restart:** Yes
@@ -2266,7 +2266,7 @@ their corresponding top-level category object in your `settings.json` file.
 
 - **`experimental.gemmaModelRouter.autoStartServer`** (boolean):
 
-  - **Description:** Automatically start the LiteRT-LM server when Hachimi CLI
+  - **Description:** Automatically start the LiteRT-LM server when GXDE AI Core
     starts and the Gemma router is enabled.
   - **Default:** `false`
   - **Requires restart:** Yes

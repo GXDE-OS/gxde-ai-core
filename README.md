@@ -58,8 +58,8 @@
 
 ![Screenshot](./docs/screenshots/screenshot.png)
 
-_Hachimi_ is a fork of Google's _Gemini CLI_, it comes with the following
-modification:
+_GXDE AI Core_ is a fork of Google's _Gemini CLI_ and CharOfString's _Hachimi_,
+and comes with the following modifications:
 
 - Added an third party account system that you may add custom endpoint &
   providers (ported from [qwen-code](https://github.com/qwenLM/qwen-code)).

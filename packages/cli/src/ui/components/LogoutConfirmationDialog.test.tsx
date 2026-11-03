@@ -30,7 +30,7 @@ describe('LogoutConfirmationDialog', () => {
 
     expect(lastFrame()).toContain('You are now signed out');
     expect(lastFrame()).toContain(
-      'Sign in again to continue using Hachimi CLI, or exit the application.',
+      'Sign in again to continue using GXDE AI Core, or exit the application.',
     );
     expect(lastFrame()).toContain('(Use Enter to select, Esc to close)');
     unmount();

@@ -49,7 +49,7 @@ export const LoginRestartDialog = ({
 
   const displayMessage =
     message ??
-    "You've successfully signed in with Google. Hachimi CLI needs to be restarted.";
+    "You've successfully signed in with Google. GXDE AI Core needs to be restarted.";
 
   return (
     <Box

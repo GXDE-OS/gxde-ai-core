@@ -1369,7 +1369,7 @@ describe('convertSessionToHistoryFormats', () => {
         timestamp: new Date().toISOString(),
         type: 'user',
         content:
-          '<session_context>\nThis is the Hachimi CLI\n</session_context>',
+          '<session_context>\nThis is the GXDE AI Core\n</session_context>',
       },
       {
         id: '2',

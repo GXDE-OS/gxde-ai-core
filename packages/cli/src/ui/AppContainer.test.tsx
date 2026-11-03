@@ -775,7 +775,7 @@ describe('AppContainer State Management', () => {
       ).toHaveBeenCalledWith(
         expect.objectContaining({
           type: 'session_complete',
-          detail: 'Hachimi CLI finished responding.',
+          detail: 'GXDE AI Core finished responding.',
         }),
       );
       expect(terminalNotificationsMocks.notifyViaTerminal).toHaveBeenCalled();
@@ -806,7 +806,7 @@ describe('AppContainer State Management', () => {
       ).toHaveBeenCalledWith(
         expect.objectContaining({
           type: 'session_complete',
-          detail: 'Hachimi CLI finished responding.',
+          detail: 'GXDE AI Core finished responding.',
         }),
       );
 
@@ -1533,7 +1533,7 @@ describe('AppContainer State Management', () => {
 
       expect(titleWrites).toHaveLength(1);
       expect(titleWrites[0][0]).toBe(
-        `\x1b]0;${'Hachimi CLI (workspace)'.padEnd(80, ' ')}\x07`,
+        `\x1b]0;${'GXDE AI Core (workspace)'.padEnd(80, ' ')}\x07`,
       );
       unmount();
     });

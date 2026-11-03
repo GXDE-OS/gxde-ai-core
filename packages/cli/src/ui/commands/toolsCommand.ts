@@ -44,7 +44,7 @@ async function listTools(
 
 const listSubCommand: SlashCommand = {
   name: 'list',
-  description: 'List available Hachimi CLI tools.',
+  description: 'List available GXDE AI Core tools.',
   kind: CommandKind.BUILT_IN,
   autoExecute: true,
   action: async (context: CommandContext): Promise<void> =>
@@ -54,7 +54,7 @@ const listSubCommand: SlashCommand = {
 const descSubCommand: SlashCommand = {
   name: 'desc',
   altNames: ['descriptions'],
-  description: 'List available Hachimi CLI tools with descriptions.',
+  description: 'List available GXDE AI Core tools with descriptions.',
   kind: CommandKind.BUILT_IN,
   autoExecute: true,
   action: async (context: CommandContext): Promise<void> =>
@@ -64,7 +64,7 @@ const descSubCommand: SlashCommand = {
 export const toolsCommand: SlashCommand = {
   name: 'tools',
   description:
-    'List available Hachimi CLI tools. Use /tools desc to include descriptions.',
+    'List available GXDE AI Core tools. Use /tools desc to include descriptions.',
   kind: CommandKind.BUILT_IN,
   autoExecute: false,
   subCommands: [listSubCommand, descSubCommand],

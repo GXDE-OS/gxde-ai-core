@@ -58,7 +58,8 @@
 
 ![截图](./docs/screenshots/screenshot.png)
 
-_Hachimi_ 是 Google _Gemini CLI_ 的衍生分支，包含以下修改：
+_GXDE AI Core_ 是 Google _Gemini CLI_
+与 CharOfString「哈基米CLI」的衍生分支，包含以下修改：
 
 - 新增了第三方账户系统，支持自定义端点和提供商（移植自
   [qwen-code](https://github.com/qwenLM/qwen-code)）。
@@ -157,7 +158,7 @@ CLI 的行为，请在 hachimi 中运行：
 > /approve mode default
 ```
 
-恢复为 Hachimi 行为：
+恢复为 GXDE AI Core 行为：
 
 ```
 > /approve mode hachimi

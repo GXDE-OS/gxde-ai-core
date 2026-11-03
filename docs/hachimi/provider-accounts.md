@@ -1,8 +1,9 @@
 # Provider accounts
 
-Hachimi authenticates through named API-key accounts. Run `hachimi`, then use
-`/auth` → **Provider accounts**. This is the only authentication method; Google
-login, Gemini API keys, and Vertex AI are not available.
+GXDE AI Core authenticates through named API-key accounts. Run `gxde-ai-core`
+(or the `hachimi` alias), then use `/auth` → **Provider accounts**. This is the
+only authentication method; Google login, Gemini API keys, and Vertex AI are not
+available.
 
 ## Add an account
 
@@ -32,8 +33,8 @@ The initial catalog is adapted from the supplied local Qwen Code checkout:
 - QwenCloud: Standard API Key, Token Plan
 
 Region and plan endpoint choices are preserved. Presets are bundled snapshots;
-Hachimi does not automatically download changes from Qwen Code. Dedicated image
-models are omitted from this chat-model selector.
+GXDE AI Core does not automatically download changes from Qwen Code. Dedicated
+image models are omitted from this chat-model selector.
 
 Custom providers support OpenAI-compatible **Chat Completions**, Anthropic
 **Messages**, and the Gemini API. OpenAI Responses and Qwen OAuth are not part
@@ -45,7 +46,7 @@ endpoint.
 Use `/auth` → **Provider accounts** to select a saved account. A provider can
 have multiple accounts, including accounts at different endpoints. Each account
 has its own API key and model list. The selection survives restart and is also
-used by headless `hachimi -p ...` runs.
+used by headless `gxde-ai-core -p ...` runs.
 
 Use `/model` to switch between the active account's models. `/model set <id>` is
 temporary; append `--persist` to remember it. Add missing model IDs by editing
@@ -68,24 +69,25 @@ login to return to.
 ## Storage and compatibility
 
 Account metadata and the active selection live in
-`~/.gemini/hachimi-accounts.json`, written atomically with user-only
-permissions. API keys are stored separately under the
+`~/.gemini/hachimi-accounts.json` for source and npm installs, written
+atomically with user-only permissions. API keys are stored separately under the
 `hachimi-provider-accounts` keychain service, using the existing encrypted-file
 fallback where a system keychain is unavailable. They are not stored in account
 metadata, shown in review screens, or placed in command history.
 
 The packaged `gxde-ai-core` and `hachimi` launchers enable isolated
-configuration. They use `~/.gxde-ai-core/` instead of `~/.gemini/` and prefix
-keychain entries with `gxde-ai-core-`, so settings, accounts, history,
-extensions and credentials do not overlap with Gemini CLI or Hachimi CLI. Set
-`GXDE_AI_CORE_HOME` to change the base directory.
+configuration. They use `~/.gxde-ai-core/hachimi-accounts.json` instead of
+`~/.gemini/hachimi-accounts.json`, and prefix keychain entries with
+`gxde-ai-core-`, so settings, accounts, history, extensions and credentials do
+not overlap with Gemini CLI or Hachimi CLI. Set `GXDE_AI_CORE_HOME` to change
+the base directory.
 
 `GEMINI_CLI_HOME` also relocates this storage for source and npm installs.
 Existing `GEMINI.md`, `.gemini/`, and `~/.gemini/settings.json` behavior remains
-compatible. Provider selection is applied to Hachimi's in-memory settings; it
-does not overwrite the saved authentication type or preferred model. Enforced
-authentication and external authentication settings take precedence over
-provider accounts.
+compatible for those installs. Provider selection is applied to GXDE AI Core's
+in-memory settings; it does not overwrite the saved authentication type or
+preferred model. Enforced authentication and external authentication settings
+take precedence over provider accounts.
 
 OpenAI-compatible and Anthropic routes support streamed text, tool calls and
 inline images. Embeddings, remote file URIs and Gemini built-in tools (such as

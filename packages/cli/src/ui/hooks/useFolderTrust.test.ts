@@ -366,7 +366,7 @@ describe('useFolderTrust', () => {
 
     expect(emitFeedbackSpy).toHaveBeenCalledWith(
       'error',
-      'Failed to save trust settings. Exiting Hachimi CLI.',
+      'Failed to save trust settings. Exiting GXDE AI Core.',
     );
     expect(mockedExit).toHaveBeenCalledWith(ExitCodes.FATAL_CONFIG_ERROR);
   });

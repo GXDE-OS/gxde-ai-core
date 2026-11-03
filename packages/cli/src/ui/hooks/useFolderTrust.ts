@@ -111,7 +111,7 @@ export const useFolderTrust = (
       } catch {
         coreEvents.emitFeedback(
           'error',
-          'Failed to save trust settings. Exiting Hachimi CLI.',
+          'Failed to save trust settings. Exiting GXDE AI Core.',
         );
         setTimeout(async () => {
           await runExitCleanup();

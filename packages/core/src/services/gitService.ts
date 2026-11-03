@@ -24,8 +24,8 @@ import {
 } from './environmentSanitization.js';
 import { getSafeGitEnv } from '../utils/gitUtils.js';
 
-export const SHADOW_REPO_AUTHOR_NAME = 'Gemini CLI';
-export const SHADOW_REPO_AUTHOR_EMAIL = 'gemini-cli@google.com';
+export const SHADOW_REPO_AUTHOR_NAME = 'GXDE AI Core';
+export const SHADOW_REPO_AUTHOR_EMAIL = 'gxde-ai-core@localhost';
 
 const SHADOW_REPO_UNSAFE_OPTIONS = {
   allowUnsafeAlias: true,

@@ -289,7 +289,7 @@ export async function parseArguments(
   yargsInstance.command(modelsCommand);
 
   yargsInstance
-    .command('$0 [query..]', 'Launch Hachimi CLI', (yargsInstance) =>
+    .command('$0 [query..]', 'Launch GXDE AI Core', (yargsInstance) =>
       yargsInstance
         .positional('query', {
           description:
