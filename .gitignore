@@ -36,6 +36,8 @@ dist
 
 # Debian packaging staging
 build/deb
+debian/.node/
+debian/.node.tar.xz
 
 # Arch package build artifacts
 arch/src/

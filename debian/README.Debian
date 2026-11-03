@@ -3,7 +3,12 @@ gxde-ai-core for Debian
 
 This package builds a Node.js Single Executable Application (SEA). The
 `dpkg-buildpackage` run executes `npm ci` and therefore needs access to the npm
-registry, or a pre-populated npm cache. Node.js 20 or newer is required.
+registry, or a pre-populated npm cache.
+
+On `amd64` and `arm64`, the build downloads the official Node.js 20.19.0 binary
+and uses it to create the SEA executable. This keeps the resulting package free
+of a runtime dependency on Debian's `libnode`/`nodejs`. Other architectures use
+the system Node.js provided by the build dependencies.
 
 The standalone binary and its sidecars are installed under
 `/usr/lib/gxde-ai-core` and exposed through `/usr/bin/gxde-ai-core` and

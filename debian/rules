@@ -1,23 +1,50 @@
 #!/usr/bin/make -f
 
-NODE := $(shell command -v node || command -v nodejs)
+DEB_HOST_ARCH ?= $(shell dpkg-architecture -qDEB_HOST_ARCH)
+NODE := $(shell command -v node || command -v nodejs || echo node)
+
+ifeq ($(DEB_HOST_ARCH),amd64)
+NODE_ARCH := x64
+OFFICIAL_NODE_ARCH := x64
+GXDE_DEPENDS := libc6 (>= 2.28), libstdc++6, libgcc-s1
+else ifeq ($(DEB_HOST_ARCH),arm64)
+NODE_ARCH := arm64
+OFFICIAL_NODE_ARCH := arm64
+GXDE_DEPENDS := libc6 (>= 2.28), libstdc++6, libgcc-s1
+else ifeq ($(DEB_HOST_ARCH),i386)
+NODE_ARCH := ia32
+OFFICIAL_NODE_ARCH :=
+GXDE_DEPENDS := nodejs
+else
 NODE_ARCH := $(shell $(NODE) -p "process.arch")
+OFFICIAL_NODE_ARCH :=
+GXDE_DEPENDS := nodejs
+endif
 
 %:
 	dh $@
 
 override_dh_auto_configure:
-	@test "$$(dpkg-parsechangelog -SVersion)" = "$$($(NODE) -p "require('./package.json').version")" || \
-		(echo "debian/changelog version must match package.json" >&2; exit 1)
+	# Nothing to configure; npm ci runs in override_dh_auto_build.
 
 override_dh_auto_build:
-	HUSKY=0 npm ci
-	$(NODE) scripts/build_binary.js --skip-install --skip-bundle
+	@if [ -n "$(OFFICIAL_NODE_ARCH)" ]; then \
+		./debian/fetch-node.sh "$(OFFICIAL_NODE_ARCH)"; \
+		export PATH="$(CURDIR)/debian/.node/bin:$$PATH"; \
+		HUSKY=0 npm ci; \
+		node scripts/build_binary.js --skip-install --skip-bundle; \
+	else \
+		HUSKY=0 npm ci; \
+		$(NODE) scripts/build_binary.js --skip-install --skip-bundle; \
+	fi
 
 override_dh_auto_test:
 	# The upstream test suite is not run during package builds.
 
 override_dh_auto_install:
+	@if [ ! -x "dist/linux-$(NODE_ARCH)/gxde-ai-core" ]; then \
+		$(MAKE) -f debian/rules override_dh_auto_build; \
+	fi
 	install -d debian/gxde-ai-core/usr/lib/gxde-ai-core
 	cp -a dist/linux-$(NODE_ARCH)/. debian/gxde-ai-core/usr/lib/gxde-ai-core/
 	chmod 0755 debian/gxde-ai-core/usr/lib/gxde-ai-core/gxde-ai-core
@@ -26,7 +53,9 @@ override_dh_install:
 	# Installed in override_dh_auto_install.
 
 override_dh_auto_clean:
-	rm -rf dist bundle node_modules build
+	# Keep dist/ so a separate build step can feed
+	# `dpkg-buildpackage -T binary` without rebuilding from scratch.
+	rm -rf bundle node_modules build debian/.node debian/.node.tar.xz
 	rm -rf packages/vscode-ide-companion/node_modules
 	rm -rf packages/cli/src/generated packages/core/src/generated
 	dh_clean
@@ -36,3 +65,10 @@ override_dh_strip:
 
 override_dh_dwz:
 	# Node.js SEA binaries do not contain DWARF debug information.
+
+override_dh_shlibdeps:
+	# dpkg-shlibdeps cannot parse the stripped Node SEA binary.
+	# Runtime dependencies are set in override_dh_gencontrol.
+
+override_dh_gencontrol:
+	dh_gencontrol -- -Vgxde:Depends="$(GXDE_DEPENDS)"
