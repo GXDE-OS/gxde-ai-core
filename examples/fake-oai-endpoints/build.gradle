@@ -1,0 +1,114 @@
+// Gradle build for the Java example client of gxde-ai-core.
+// ----------------------------------------------------------------------------
+// Copyright (C) 2026 CharOfString <root@charofstring.cc>
+//
+// This program is free software: you can redistribute it and/or modify it
+// under the terms of the GNU General Public License as published by the Free
+// Software Foundation, either version 3 of the License, or (at your option)
+// any later version.
+//
+// This program is distributed in the hope that it will be useful, but WITHOUT
+// ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or
+// FITNESS FOR A PARTICULAR PURPOSE. See the GNU General Public License for
+// more details.
+//
+// You should have received a copy of the GNU General Public License along
+// with this program. If not, see <https://www.gnu.org/licenses/>.
+
+plugins {
+  id 'java'
+  id 'application'
+  id 'checkstyle'
+  id 'com.google.protobuf' version '0.10.0'
+}
+
+group = 'top.gxde.ai.core'
+version = '1.0-SNAPSHOT'
+
+def grpcVersion = '1.85.1'
+def protobufVersion = '3.25.9'
+
+repositories {
+  mavenCentral()
+}
+
+dependencies {
+  implementation "io.grpc:grpc-protobuf:${grpcVersion}"
+  implementation "io.grpc:grpc-stub:${grpcVersion}"
+  implementation "com.google.protobuf:protobuf-java:${protobufVersion}"
+  runtimeOnly "io.grpc:grpc-netty-shaded:${grpcVersion}"
+  compileOnly 'org.apache.tomcat:annotations-api:6.0.53'
+
+  testImplementation "io.grpc:grpc-inprocess:${grpcVersion}"
+  testImplementation platform('org.junit:junit-bom:6.0.0')
+  testImplementation 'org.junit.jupiter:junit-jupiter'
+  testRuntimeOnly 'org.junit.platform:junit-platform-launcher'
+}
+
+tasks.withType(JavaCompile).configureEach {
+  options.release = 21
+  options.encoding = 'UTF-8'
+  options.compilerArgs += ['-Xlint:all', '-Werror']
+}
+
+sourceSets {
+  main {
+    proto {
+      srcDir "${rootDir}/../../proto"
+    }
+  }
+}
+
+protobuf {
+  protoc {
+    artifact = "com.google.protobuf:protoc:${protobufVersion}"
+  }
+  plugins {
+    grpc {
+      artifact = "io.grpc:protoc-gen-grpc-java:${grpcVersion}"
+    }
+  }
+  generateProtoTasks {
+    all().configureEach {
+      plugins {
+        grpc {}
+      }
+    }
+  }
+}
+
+checkstyle {
+  toolVersion = '14.3.0'
+  config = resources.text.fromArchiveEntry(
+      configurations.checkstyle.filter { it.name ==~ /checkstyle-[0-9.]+\.jar/ },
+      'google_checks.xml')
+  maxWarnings = 0
+}
+
+tasks.named('checkstyleMain') {
+  source = fileTree('src/main/java')
+}
+
+application {
+  mainClass = 'top.gxde.ai.core.Main'
+  applicationDefaultJvmArgs = ['--enable-native-access=ALL-UNNAMED']
+}
+
+test {
+  useJUnitPlatform()
+}
+
+def javadocMirror = file("${rootDir}/../../doc/example/ai-core")
+
+tasks.named('javadoc') {
+  source = fileTree('src/main/java')
+  options.encoding = 'UTF-8'
+  options.addStringOption('Xdoclint:all', '-quiet')
+  options.addBooleanOption('Werror', true)
+  finalizedBy 'syncJavadoc'
+}
+
+tasks.register('syncJavadoc', Sync) {
+  from tasks.named('javadoc')
+  into javadocMirror
+}
