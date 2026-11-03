@@ -1,0 +1,72 @@
+Hachimi CLI
+Copyright 2026 CharOfString <root@charofstring.cc>
+
+This project is a modified distribution of Gemini CLI, licensed under the
+Apache License, Version 2.0. Original Google copyright and license notices
+remain in the source files and LICENSE.
+
+Gemini CLI
+Copyright 2025 Google LLC
+Source: https://github.com/google-gemini/gemini-cli
+Upstream base: cd1b45c2db0a5ea7b7fc3b67c1ba5879601d6005 (see repository history for the full revision).
+
+Qwen Code provider presets, approval workflow and reasoning effort
+Copyright 2025 Google LLC
+Copyright 2025 Qwen
+Copyright 2026 Qwen Team
+Source: https://github.com/QwenLM/qwen-code
+Reference revision: 64b2554801e45bef1d1482325cdf35d80a0ba79e
+Source files: packages/core/src/providers/presets/*.ts
+Adapted file: packages/core/src/providers/presets.ts
+Approval workflow references:
+- packages/cli/src/ui/commands/approvalModeCommand.ts
+- packages/cli/src/ui/hooks/useAutoAcceptIndicator.ts
+- packages/core/src/config/approval-mode.ts
+Hachimi implementations: packages/cli/src/ui/commands/approveCommand.ts and
+packages/cli/src/ui/hooks/useApprovalModeIndicator.ts.
+Approval-mode cycling is adapted to Hachimi policies, feature availability and
+existing trust restrictions; Qwen AUTO and session-mode commands are not imported.
+Language preference reference: packages/cli/src/i18n/languageUtils.ts
+(Qwen's global output-language.md rule file). Hachimi implementation:
+packages/core/src/utils/languagePreference.ts; no Qwen source or prompt text
+is imported.
+Reasoning effort source file: packages/core/src/core/reasoning-effort.ts
+(effort ladder, ranks, input normalization and clamping), adapted in
+packages/core/src/core/reasoningEffort.ts. Design reference:
+docs/design/2026-06-30-unified-reasoning-effort-cli.md. Provider and Gemini
+mappings and the /effort command (packages/cli/src/ui/commands/effortCommand.ts)
+are Hachimi implementations; Qwen's GPT capability table, effort dialog and
+other provider adapters are not imported.
+License: Apache-2.0; see third_party/qwen-code/LICENSE in source distributions
+and licenses/qwen-code-LICENSE under bundle/ or dist/ in npm packages.
+Standalone distributions carry licenses/qwen-code-LICENSE beside the executable.
+
+Modifications by CharOfString <root@charofstring.cc>:
+- Renamed the CLI and npm package to support installation alongside Gemini CLI.
+- Added named provider accounts, credential storage, selection and setup UI.
+- Adapted Qwen provider preset data to Hachimi's account and model types,
+  preserving endpoint choices and selected chat-model metadata while omitting
+  dedicated image-generation routes.
+- Added protocol adapters and integrated model/context selection with the CLI.
+- Added a global LANGUAGE_PREFERENCE.md response-language preference that is
+  read at session start and overridden with English on the Linux virtual console.
+- Added the /effort command and model.reasoningEffort setting, mapping a unified
+  effort ladder onto provider reasoning_effort and Gemini thinking settings.
+- Merged streamed thought deltas into readable thinking blocks and detected
+  provider reasoning sent as a `reasoning` field or a leading <think> block.
+- Recorded streamed reasoning as whole thoughts instead of one per delta, and
+  merged the per-delta thoughts of older sessions when resuming them.
+- Placed the version and sign-in details beside a custom logo when the terminal
+  is wide enough.
+- Identified the agent as Hachimi CLI in system prompts and added a
+  get_identity tool reporting the active model, provider and version.
+- Added a /model compress command and model.compressionModel setting to pick
+  the model used for context compression, and resolved context window limits
+  for provider models without a configured size.
+- Added a collapsed inline thinking mode, now the default, that streams
+  reasoning into a live block and folds it into a one-line summary when
+  thinking ends, and kept raw reasoning out of the status line.
+- Updated tests, documentation, source formatting and distribution notices.
+
+Product and provider names identify compatibility or the origin of the work.
+They do not imply endorsement by Google, Qwen or the listed providers.
