@@ -6,6 +6,9 @@ import java.io.IOException;
 import java.net.InetSocketAddress;
 import java.util.concurrent.Executors;
 
+/**
+ * The Endpoint class.
+ */
 public class FakeOpenAIEndpoint {
   // The fake OAI endpoint will run on localhost:65530
   private static final String HOST = System.getProperty("fake.host", "127.0.0.1");
@@ -22,8 +25,11 @@ public class FakeOpenAIEndpoint {
     server.createContext("/", FakeOpenAIEndpoint::serverHandler);
     server.setExecutor(Executors.newCachedThreadPool());
     server.start();
-    System.out.printf("Fake OpenAI endpoint: http://%s:%d/v1%n", HOST, PORT);
-    System.out.println("Available: GET /v1/models, POST /v1/chat/completions, POST /v1/responses");
+
+    System.out.println("Welcome to fake OAI server.");
+    System.out.printf("The OAI compatible endpoint is up at: http://%s:%d/v1%n", HOST, PORT);
+    System.out.println(
+      "Available ops: GET /v1/models, POST /v1/chat/completions, POST /v1/responses");
   }
 
   /**
