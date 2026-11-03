@@ -39,7 +39,7 @@
 <h3 align="center">GXDE AI Core</h3>
 
   <p align="center">
-    Google Gemini CLI 的衍生分支，增强了审批模式并支持第三方模型。
+    Google Gemini CLI/CharOfString的「哈基米CLI」 的衍生分支，增强了审批模式并支持第三方模型。
     <br />
     <a href="./docs/"><strong>浏览文档 »</strong></a>
     <br />

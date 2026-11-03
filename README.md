@@ -39,7 +39,7 @@
 <h3 align="center">GXDE AI Core</h3>
 
   <p align="center">
-    A fork of Google's Gemini CLI with enhanced approval mode and third party model support.
+    A fork of Google's Gemini CLI/CharOfString's Hachimi with enhanced approval mode and third party model support.
     <br />
     <a href="./docs/"><strong>Explore the docs »</strong></a>
     <br />
