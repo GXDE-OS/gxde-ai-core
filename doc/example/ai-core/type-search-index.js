@@ -1,0 +1,1 @@
+typeSearchIndex = [{"p":"top.gxde.ai.core","l":"CoreClient"},{"p":"top.gxde.ai.core","l":"Main"},{"p":"top.gxde.ai.core","l":"SocketPaths"},{"p":"top.gxde.ai.core","l":"TableFormatter"},{"l":"所有类和接口","u":"allclasses-index.html"}];updateSearchResults();
