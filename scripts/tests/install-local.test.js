@@ -44,13 +44,13 @@ function install() {
 
 describe.skipIf(process.platform === 'win32')('local installation', () => {
   beforeEach(() => {
-    temporary = mkdtempSync(path.join(tmpdir(), 'hachimi-installer-test-'));
+    temporary = mkdtempSync(path.join(tmpdir(), 'gxde-ai-core-installer-test-'));
     checkout = path.join(temporary, 'source');
     prefix = path.join(temporary, 'prefix with spaces');
     write(
       'package.json',
       JSON.stringify({
-        name: 'hachimi-cli',
+        name: 'gxde-ai-core',
         version: '1.0.0',
         type: 'module',
         optionalDependencies: { native: '1.0.0', absent: '1.0.0' },
@@ -95,7 +95,7 @@ describe.skipIf(process.platform === 'win32')('local installation', () => {
     rmSync(checkout, { recursive: true });
     const result = spawnSync(
       process.execPath,
-      [path.join(prefix, 'bin/hachimi')],
+      [path.join(prefix, 'bin/gxde-ai-core')],
       {
         cwd: temporary,
         encoding: 'utf8',
@@ -105,38 +105,9 @@ describe.skipIf(process.platform === 'win32')('local installation', () => {
     expect(result.error).toBeUndefined();
     expect(result.stdout.trim()).toBe('installed independently');
     expect(
-      readFileSync(path.join(prefix, 'lib/hachimi-cli/NOTICE'), 'utf8'),
+      readFileSync(path.join(prefix, 'lib/gxde-ai-core/NOTICE'), 'utf8'),
     ).toBe('attribution');
     expect(existsSync(path.join(prefix, 'bin/gemini'))).toBe(false);
-  });
-
-  it('installs the 哈基米 alias pointing at hachimi', () => {
-    expect(install().status).toBe(0);
-    const alias = path.join(prefix, 'bin/哈基米');
-    expect(readlinkSync(alias)).toBe('hachimi');
-    rmSync(checkout, { recursive: true });
-    const result = spawnSync(process.execPath, [alias], { encoding: 'utf8' });
-    expect(result.error).toBeUndefined();
-    expect(result.stdout.trim()).toBe('installed independently');
-  });
-
-  it('keeps the 哈基米 alias across updates', () => {
-    expect(install().status).toBe(0);
-    expect(install().status).toBe(0);
-    expect(lstatSync(path.join(prefix, 'bin/哈基米')).isSymbolicLink()).toBe(
-      true,
-    );
-  });
-
-  it('leaves an unrelated 哈基米 executable intact', () => {
-    mkdirSync(path.join(prefix, 'bin'), { recursive: true });
-    writeFileSync(path.join(prefix, 'bin/哈基米'), 'do not overwrite');
-    expect(install().status).not.toBe(0);
-    expect(readFileSync(path.join(prefix, 'bin/哈基米'), 'utf8')).toBe(
-      'do not overwrite',
-    );
-    expect(existsSync(path.join(prefix, 'bin/hachimi'))).toBe(false);
-    expect(existsSync(path.join(prefix, 'lib/hachimi-cli'))).toBe(false);
   });
 
   it('updates an existing installation', () => {
@@ -145,7 +116,7 @@ describe.skipIf(process.platform === 'win32')('local installation', () => {
     expect(install().status).toBe(0);
     const result = spawnSync(
       process.execPath,
-      [path.join(prefix, 'bin/hachimi')],
+      [path.join(prefix, 'bin/gxde-ai-core')],
       {
         encoding: 'utf8',
       },
@@ -156,9 +127,9 @@ describe.skipIf(process.platform === 'win32')('local installation', () => {
 
   it('leaves an unrelated executable intact', () => {
     mkdirSync(path.join(prefix, 'bin'), { recursive: true });
-    writeFileSync(path.join(prefix, 'bin/hachimi'), 'do not overwrite');
+    writeFileSync(path.join(prefix, 'bin/gxde-ai-core'), 'do not overwrite');
     expect(install().status).not.toBe(0);
-    expect(readFileSync(path.join(prefix, 'bin/hachimi'), 'utf8')).toBe(
+    expect(readFileSync(path.join(prefix, 'bin/gxde-ai-core'), 'utf8')).toBe(
       'do not overwrite',
     );
   });
@@ -169,7 +140,7 @@ describe.skipIf(process.platform === 'win32')('local installation', () => {
     expect(install().status).not.toBe(0);
     const result = spawnSync(
       process.execPath,
-      [path.join(prefix, 'bin/hachimi')],
+      [path.join(prefix, 'bin/gxde-ai-core')],
       {
         encoding: 'utf8',
       },

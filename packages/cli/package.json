@@ -1,5 +1,5 @@
 {
-  "name": "hachimi-cli",
+  "name": "gxde-ai-core",
   "version": "0.67.67",
   "description": "Gemini CLI",
   "license": "Apache-2.0",
@@ -10,8 +10,7 @@
   "type": "module",
   "main": "dist/index.js",
   "bin": {
-    "hachimi": "dist/index.js",
-    "哈基米": "dist/index.js"
+    "gxde-ai-core": "dist/index.js"
   },
   "scripts": {
     "build": "node ../../scripts/build_package.js",

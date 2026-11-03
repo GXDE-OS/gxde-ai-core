@@ -36,7 +36,7 @@
   </a>
 -->
 
-<h3 align="center">Hachimi</h3>
+<h3 align="center">GXDE AI Core</h3>
 
   <p align="center">
     A fork of Google's Gemini CLI with enhanced approval mode and third party model support.

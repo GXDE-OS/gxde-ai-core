@@ -97,7 +97,7 @@ export function getInstallationInfo(
     if (process.platform === 'darwin') {
       try {
         const brewPrefix = childProcess
-          .execSync('brew --prefix hachimi-cli', {
+          .execSync('brew --prefix gxde-ai-core', {
             encoding: 'utf8',
             stdio: ['ignore', 'pipe', 'ignore'],
           })
@@ -109,7 +109,7 @@ export function getInstallationInfo(
             packageManager: PackageManager.HOMEBREW,
             isGlobal: true,
             updateMessage:
-              'Installed via Homebrew. Please update with "brew upgrade hachimi-cli".',
+              'Installed via Homebrew. Please update with "brew upgrade gxde-ai-core".',
           };
         }
       } catch {
@@ -120,7 +120,7 @@ export function getInstallationInfo(
 
     // Check for Volta
     if (realPath.includes('/.volta/') || realPath.includes('/Volta/')) {
-      const updateCommand = 'volta install hachimi-cli@latest';
+      const updateCommand = 'volta install gxde-ai-core@latest';
       return {
         packageManager: PackageManager.VOLTA,
         isGlobal: true,
@@ -138,7 +138,7 @@ export function getInstallationInfo(
       realPath.includes('/Library/pnpm/global/') ||
       realPath.includes('/AppData/Local/pnpm/global/')
     ) {
-      const updateCommand = 'pnpm add -g hachimi-cli@latest';
+      const updateCommand = 'pnpm add -g gxde-ai-core@latest';
       return {
         packageManager: PackageManager.PNPM,
         isGlobal: true,
@@ -151,7 +151,7 @@ export function getInstallationInfo(
 
     // Check for yarn
     if (realPath.includes('/.yarn/global')) {
-      const updateCommand = 'yarn global add hachimi-cli@latest';
+      const updateCommand = 'yarn global add gxde-ai-core@latest';
       return {
         packageManager: PackageManager.YARN,
         isGlobal: true,
@@ -171,7 +171,7 @@ export function getInstallationInfo(
       };
     }
     if (realPath.includes('/.bun/install/global')) {
-      const updateCommand = 'bun add -g hachimi-cli@latest';
+      const updateCommand = 'bun add -g gxde-ai-core@latest';
       return {
         packageManager: PackageManager.BUN,
         isGlobal: true,
@@ -204,7 +204,7 @@ export function getInstallationInfo(
     }
 
     // Assume global npm
-    const updateCommand = 'npm install -g hachimi-cli@latest';
+    const updateCommand = 'npm install -g gxde-ai-core@latest';
     return {
       packageManager: PackageManager.NPM,
       isGlobal: true,

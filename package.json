@@ -1,5 +1,5 @@
 {
-  "name": "hachimi-cli",
+  "name": "gxde-ai-core",
   "version": "0.67.67",
   "engines": {
     "node": ">=20.0.0"
@@ -92,8 +92,7 @@
     "cross-spawn": "7.0.6"
   },
   "bin": {
-    "hachimi": "bundle/gemini.js",
-    "哈基米": "bundle/gemini.js"
+    "gxde-ai-core": "bundle/gemini.js"
   },
   "files": [
     "bundle/",

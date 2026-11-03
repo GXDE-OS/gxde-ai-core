@@ -413,7 +413,7 @@ const targetDir = join(distDir, targetName);
 mkdirSync(targetDir, { recursive: true });
 
 const nodeBinary = process.execPath;
-const binaryName = platform === 'win32' ? 'hachimi.exe' : 'hachimi';
+const binaryName = platform === 'win32' ? 'gxde-ai-core.exe' : 'gxde-ai-core';
 const targetBinaryPath = join(targetDir, binaryName);
 
 console.log(`Copying node binary from ${nodeBinary} to ${targetBinaryPath}...`);

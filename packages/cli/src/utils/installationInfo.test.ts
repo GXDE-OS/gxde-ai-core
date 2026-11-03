@@ -108,7 +108,7 @@ describe('getInstallationInfo', () => {
   });
 
   it('should detect running via npx', () => {
-    const npxPath = `/Users/test/.npm/_npx/12345/bin/hachimi`;
+    const npxPath = `/Users/test/.npm/_npx/12345/bin/gxde-ai-core`;
     process.argv[1] = npxPath;
     mockedRealPathSync.mockReturnValue(npxPath);
 
@@ -120,7 +120,7 @@ describe('getInstallationInfo', () => {
   });
 
   it('should detect running via pnpx', () => {
-    const pnpxPath = `/Users/test/.pnpm/_pnpx/12345/bin/hachimi`;
+    const pnpxPath = `/Users/test/.pnpm/_pnpx/12345/bin/gxde-ai-core`;
     process.argv[1] = pnpxPath;
     mockedRealPathSync.mockReturnValue(pnpxPath);
 
@@ -132,7 +132,7 @@ describe('getInstallationInfo', () => {
   });
 
   it('should detect running via bunx', () => {
-    const bunxPath = `/Users/test/.bun/install/cache/12345/bin/hachimi`;
+    const bunxPath = `/Users/test/.bun/install/cache/12345/bin/gxde-ai-core`;
     process.argv[1] = bunxPath;
     mockedRealPathSync.mockReturnValue(bunxPath);
     mockedExecSync.mockImplementation(() => {
@@ -151,23 +151,23 @@ describe('getInstallationInfo', () => {
       value: 'darwin',
     });
     // Use a path that matches what brew would resolve to
-    const cliPath = '/opt/homebrew/Cellar/hachimi-cli/1.0.0/bin/hachimi';
+    const cliPath = '/opt/homebrew/Cellar/gxde-ai-core/1.0.0/bin/gxde-ai-core';
     process.argv[1] = cliPath;
 
     mockedExecSync.mockImplementation((cmd) => {
       if (
         typeof cmd === 'string' &&
-        cmd.includes('brew --prefix hachimi-cli')
+        cmd.includes('brew --prefix gxde-ai-core')
       ) {
-        return '/opt/homebrew/opt/hachimi-cli';
+        return '/opt/homebrew/opt/gxde-ai-core';
       }
       throw new Error(`Command failed: ${cmd}`);
     });
 
     mockedRealPathSync.mockImplementation((p) => {
       if (p === cliPath) return cliPath;
-      if (p === '/opt/homebrew/opt/hachimi-cli') {
-        return '/opt/homebrew/Cellar/hachimi-cli/1.0.0';
+      if (p === '/opt/homebrew/opt/gxde-ai-core') {
+        return '/opt/homebrew/Cellar/gxde-ai-core/1.0.0';
       }
       return String(p);
     });
@@ -175,13 +175,13 @@ describe('getInstallationInfo', () => {
     const info = getInstallationInfo(projectRoot, true);
 
     expect(mockedExecSync).toHaveBeenCalledWith(
-      expect.stringContaining('brew --prefix hachimi-cli'),
+      expect.stringContaining('brew --prefix gxde-ai-core'),
       expect.anything(),
     );
     expect(info.packageManager).toBe(PackageManager.HOMEBREW);
     expect(info.isGlobal).toBe(true);
     expect(info.updateMessage).toBe(
-      'Installed via Homebrew. Please update with "brew upgrade hachimi-cli".',
+      'Installed via Homebrew. Please update with "brew upgrade gxde-ai-core".',
     );
   });
 
@@ -189,7 +189,7 @@ describe('getInstallationInfo', () => {
     Object.defineProperty(process, 'platform', {
       value: 'darwin',
     });
-    const cliPath = '/usr/local/bin/hachimi';
+    const cliPath = '/usr/local/bin/gxde-ai-core';
     process.argv[1] = cliPath;
     mockedRealPathSync.mockReturnValue(cliPath);
     mockedExecSync.mockImplementation(() => {
@@ -199,7 +199,7 @@ describe('getInstallationInfo', () => {
     const info = getInstallationInfo(projectRoot, true);
 
     expect(mockedExecSync).toHaveBeenCalledWith(
-      expect.stringContaining('brew --prefix hachimi-cli'),
+      expect.stringContaining('brew --prefix gxde-ai-core'),
       expect.anything(),
     );
     // Should fall back to default global npm
@@ -208,7 +208,7 @@ describe('getInstallationInfo', () => {
   });
 
   it('should detect global pnpm installation', () => {
-    const pnpmPath = `/Users/test/.pnpm/global/5/node_modules/.pnpm/some-hash/node_modules/hachimi-cli/dist/index.js`;
+    const pnpmPath = `/Users/test/.pnpm/global/5/node_modules/.pnpm/some-hash/node_modules/gxde-ai-core/dist/index.js`;
     process.argv[1] = pnpmPath;
     mockedRealPathSync.mockReturnValue(pnpmPath);
     mockedExecSync.mockImplementation(() => {
@@ -219,7 +219,7 @@ describe('getInstallationInfo', () => {
     const info = getInstallationInfo(projectRoot, true);
     expect(info.packageManager).toBe(PackageManager.PNPM);
     expect(info.isGlobal).toBe(true);
-    expect(info.updateCommand).toBe('pnpm add -g hachimi-cli@latest');
+    expect(info.updateCommand).toBe('pnpm add -g gxde-ai-core@latest');
     expect(info.updateMessage).toContain('Attempting to automatically update');
 
     // isAutoUpdateEnabled = false -> "Please run..."
@@ -228,7 +228,7 @@ describe('getInstallationInfo', () => {
   });
 
   it('should detect global yarn installation', () => {
-    const yarnPath = `/Users/test/.yarn/global/node_modules/hachimi-cli/dist/index.js`;
+    const yarnPath = `/Users/test/.yarn/global/node_modules/gxde-ai-core/dist/index.js`;
     process.argv[1] = yarnPath;
     mockedRealPathSync.mockReturnValue(yarnPath);
     mockedExecSync.mockImplementation(() => {
@@ -239,7 +239,7 @@ describe('getInstallationInfo', () => {
     const info = getInstallationInfo(projectRoot, true);
     expect(info.packageManager).toBe(PackageManager.YARN);
     expect(info.isGlobal).toBe(true);
-    expect(info.updateCommand).toBe('yarn global add hachimi-cli@latest');
+    expect(info.updateCommand).toBe('yarn global add gxde-ai-core@latest');
     expect(info.updateMessage).toContain('Attempting to automatically update');
 
     // isAutoUpdateEnabled = false -> "Please run..."
@@ -248,7 +248,7 @@ describe('getInstallationInfo', () => {
   });
 
   it('should detect global bun installation', () => {
-    const bunPath = `/Users/test/.bun/install/global/node_modules/hachimi-cli/dist/index.js`;
+    const bunPath = `/Users/test/.bun/install/global/node_modules/gxde-ai-core/dist/index.js`;
     process.argv[1] = bunPath;
     mockedRealPathSync.mockReturnValue(bunPath);
     mockedExecSync.mockImplementation(() => {
@@ -259,7 +259,7 @@ describe('getInstallationInfo', () => {
     const info = getInstallationInfo(projectRoot, true);
     expect(info.packageManager).toBe(PackageManager.BUN);
     expect(info.isGlobal).toBe(true);
-    expect(info.updateCommand).toBe('bun add -g hachimi-cli@latest');
+    expect(info.updateCommand).toBe('bun add -g gxde-ai-core@latest');
     expect(info.updateMessage).toContain('Attempting to automatically update');
 
     // isAutoUpdateEnabled = false -> "Please run..."
@@ -268,7 +268,7 @@ describe('getInstallationInfo', () => {
   });
 
   it('should detect local installation and identify yarn from lockfile', () => {
-    const localPath = `${projectRoot}/node_modules/.bin/hachimi`;
+    const localPath = `${projectRoot}/node_modules/.bin/gxde-ai-core`;
     process.argv[1] = localPath;
     mockedRealPathSync.mockReturnValue(localPath);
     mockedExecSync.mockImplementation(() => {
@@ -286,7 +286,7 @@ describe('getInstallationInfo', () => {
   });
 
   it('should detect local installation and identify pnpm from lockfile', () => {
-    const localPath = `${projectRoot}/node_modules/.bin/hachimi`;
+    const localPath = `${projectRoot}/node_modules/.bin/gxde-ai-core`;
     process.argv[1] = localPath;
     mockedRealPathSync.mockReturnValue(localPath);
     mockedExecSync.mockImplementation(() => {
@@ -303,7 +303,7 @@ describe('getInstallationInfo', () => {
   });
 
   it('should detect local installation and identify bun from lockfile', () => {
-    const localPath = `${projectRoot}/node_modules/.bin/hachimi`;
+    const localPath = `${projectRoot}/node_modules/.bin/gxde-ai-core`;
     process.argv[1] = localPath;
     mockedRealPathSync.mockReturnValue(localPath);
     mockedExecSync.mockImplementation(() => {
@@ -320,7 +320,7 @@ describe('getInstallationInfo', () => {
   });
 
   it('should default to local npm installation if no lockfile is found', () => {
-    const localPath = `${projectRoot}/node_modules/.bin/hachimi`;
+    const localPath = `${projectRoot}/node_modules/.bin/gxde-ai-core`;
     process.argv[1] = localPath;
     mockedRealPathSync.mockReturnValue(localPath);
     mockedExecSync.mockImplementation(() => {
@@ -335,7 +335,7 @@ describe('getInstallationInfo', () => {
   });
 
   it('should default to global npm installation for unrecognized paths', () => {
-    const globalPath = `/usr/local/bin/hachimi`;
+    const globalPath = `/usr/local/bin/gxde-ai-core`;
     process.argv[1] = globalPath;
     mockedRealPathSync.mockReturnValue(globalPath);
     mockedExecSync.mockImplementation(() => {
@@ -346,7 +346,7 @@ describe('getInstallationInfo', () => {
     const info = getInstallationInfo(projectRoot, true);
     expect(info.packageManager).toBe(PackageManager.NPM);
     expect(info.isGlobal).toBe(true);
-    expect(info.updateCommand).toBe('npm install -g hachimi-cli@latest');
+    expect(info.updateCommand).toBe('npm install -g gxde-ai-core@latest');
     expect(info.updateMessage).toContain('Attempting to automatically update');
 
     // isAutoUpdateEnabled = false -> "Please run..."
@@ -356,47 +356,47 @@ describe('getInstallationInfo', () => {
 
   it('should detect Volta installation (Unix-style)', () => {
     const voltaPath =
-      '/Users/test/.volta/tools/image/node/20.0.0/lib/node_modules/hachimi-cli/dist/index.js';
+      '/Users/test/.volta/tools/image/node/20.0.0/lib/node_modules/gxde-ai-core/dist/index.js';
     process.argv[1] = voltaPath;
     mockedRealPathSync.mockReturnValue(voltaPath);
 
     const info = getInstallationInfo(projectRoot, true);
 
     expect(info.packageManager).toBe(PackageManager.VOLTA);
-    expect(info.updateCommand).toBe('volta install hachimi-cli@latest');
+    expect(info.updateCommand).toBe('volta install gxde-ai-core@latest');
   });
 
   it('should detect Volta installation (Windows-style)', () => {
     const voltaPath =
-      'C:\\Users\\test\\AppData\\Local\\Volta\\tools\\image\\node\\20.0.0\\node_modules\\@google/hachimi-cli\\dist\\index.js';
+      'C:\\Users\\test\\AppData\\Local\\Volta\\tools\\image\\node\\20.0.0\\node_modules\\@google/gxde-ai-core\\dist\\index.js';
     process.argv[1] = voltaPath;
     mockedRealPathSync.mockReturnValue(voltaPath);
 
     const info = getInstallationInfo(projectRoot, true);
 
     expect(info.packageManager).toBe(PackageManager.VOLTA);
-    expect(info.updateCommand).toBe('volta install hachimi-cli@latest');
+    expect(info.updateCommand).toBe('volta install gxde-ai-core@latest');
   });
 
-  it('should NOT detect Homebrew if hachimi-cli is installed in brew but running from npm location', () => {
+  it('should NOT detect Homebrew if gxde-ai-core is installed in brew but running from npm location', () => {
     Object.defineProperty(process, 'platform', {
       value: 'darwin',
     });
     // Path looks like standard global NPM
-    const cliPath = '/usr/local/lib/node_modules/hachimi-cli/dist/index.js';
+    const cliPath = '/usr/local/lib/node_modules/gxde-ai-core/dist/index.js';
     process.argv[1] = cliPath;
 
     // Setup mocks
     mockedExecSync.mockImplementation((cmd) => {
       if (typeof cmd === 'string' && cmd.includes('brew list')) {
-        return Buffer.from('hachimi-cli\n');
+        return Buffer.from('gxde-ai-core\n');
       }
       // Future proofing for the fix:
       if (
         typeof cmd === 'string' &&
-        cmd.includes('brew --prefix hachimi-cli')
+        cmd.includes('brew --prefix gxde-ai-core')
       ) {
-        return '/opt/homebrew/opt/hachimi-cli';
+        return '/opt/homebrew/opt/gxde-ai-core';
       }
       throw new Error(`Command failed: ${cmd}`);
     });
@@ -404,8 +404,8 @@ describe('getInstallationInfo', () => {
     mockedRealPathSync.mockImplementation((p) => {
       if (p === cliPath) return cliPath;
       // Future proofing for the fix:
-      if (p === '/opt/homebrew/opt/hachimi-cli')
-        return '/opt/homebrew/Cellar/hachimi-cli/1.0.0';
+      if (p === '/opt/homebrew/opt/gxde-ai-core')
+        return '/opt/homebrew/Cellar/gxde-ai-core/1.0.0';
       return String(p);
     });
 

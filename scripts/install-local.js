@@ -45,9 +45,8 @@ if (args.length !== 0 && (args.length !== 2 || args[0] !== '--prefix')) {
 }
 
 const prefix = path.resolve(args[1] ?? path.join(homedir(), '.local'));
-const library = path.join(prefix, 'lib', 'hachimi-cli');
-const executable = path.join(prefix, 'bin', 'hachimi');
-const alias = path.join(prefix, 'bin', '哈基米');
+const library = path.join(prefix, 'lib', 'gxde-ai-core');
+const executable = path.join(prefix, 'bin', 'gxde-ai-core');
 const bundle = path.join(root, 'bundle');
 
 if (!existsSync(path.join(bundle, 'gemini.js'))) {
@@ -60,7 +59,7 @@ const acceptedTargets = [
     prefix,
     'lib',
     'node_modules',
-    'hachimi-cli',
+    'gxde-ai-core',
     'bundle',
     'gemini.js',
   ),
@@ -92,13 +91,8 @@ function existingLink(file, targets) {
 const links = [
   {
     file: executable,
-    target: '../lib/hachimi-cli/bundle/gemini.js',
+    target: '../lib/gxde-ai-core/bundle/gemini.js',
     previous: existingLink(executable, acceptedTargets),
-  },
-  {
-    file: alias,
-    target: 'hachimi',
-    previous: existingLink(alias, [executable, ...acceptedTargets]),
   },
 ];
 
@@ -107,7 +101,7 @@ if (existsSync(library)) {
 
   if (
     !existsSync(manifest) ||
-    JSON.parse(readFileSync(manifest, 'utf8')).name !== 'hachimi-cli'
+    JSON.parse(readFileSync(manifest, 'utf8')).name !== 'gxde-ai-core'
   ) {
     throw new Error(`Refusing to replace an unrelated directory: ${library}`);
   }
@@ -116,7 +110,7 @@ if (existsSync(library)) {
 mkdirSync(path.dirname(library), { recursive: true });
 mkdirSync(path.dirname(executable), { recursive: true });
 const staging = mkdtempSync(
-  path.join(path.dirname(library), '.hachimi-install-'),
+  path.join(path.dirname(library), '.gxde-ai-core-install-'),
 );
 const application = path.join(staging, 'application');
 const backup = path.join(staging, 'previous');
@@ -180,7 +174,7 @@ try {
         version: metadata.version,
         type: 'module',
         license: metadata.license,
-        bin: { hachimi: 'bundle/gemini.js', 哈基米: 'bundle/gemini.js' },
+        bin: { 'gxde-ai-core': 'bundle/gemini.js' },
       },
       null,
       2,
@@ -212,7 +206,7 @@ try {
   }
 
   console.log(`Installed ${metadata.name} ${metadata.version} to ${library}`);
-  console.log(`Run: ${executable} (alias: ${alias})`);
+  console.log(`Run: ${executable}`);
 
   if (
     !(process.env['PATH'] ?? '')

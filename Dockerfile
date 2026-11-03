@@ -84,15 +84,15 @@ RUN mkdir -p /home/node/.gemini \
 # switch to non-root user node
 USER node
 
-COPY --chown=node:node packages/cli/dist/hachimi-cli-*.tgz /tmp/gemini-cli.tgz
+COPY --chown=node:node packages/cli/dist/gxde-ai-core-*.tgz /tmp/gemini-cli.tgz
 COPY --chown=node:node packages/core/dist/google-gemini-cli-core-*.tgz /tmp/gemini-core.tgz
 RUN npm install -g /tmp/gemini-core.tgz \
   && npm install -g /tmp/gemini-cli.tgz \
-  && node -e "const fs=require('node:fs'); JSON.parse(fs.readFileSync('/usr/local/share/npm-global/lib/node_modules/hachimi-cli/package.json','utf8')); JSON.parse(fs.readFileSync('/usr/local/share/npm-global/lib/node_modules/@google/gemini-cli-core/package.json','utf8'));" \
-  && ln -s hachimi /usr/local/share/npm-global/bin/gemini \
-  && hachimi --version > /dev/null \
+  && node -e "const fs=require('node:fs'); JSON.parse(fs.readFileSync('/usr/local/share/npm-global/lib/node_modules/gxde-ai-core/package.json','utf8')); JSON.parse(fs.readFileSync('/usr/local/share/npm-global/lib/node_modules/@google/gemini-cli-core/package.json','utf8'));" \
+  && ln -s gxde-ai-core /usr/local/share/npm-global/bin/gemini \
+  && gxde-ai-core --version > /dev/null \
   && npm cache clean --force \
   && rm -f /tmp/gemini-{cli,core}.tgz
 
 # default entrypoint when none specified
-ENTRYPOINT ["/usr/local/share/npm-global/bin/hachimi"]
+ENTRYPOINT ["/usr/local/share/npm-global/bin/gxde-ai-core"]

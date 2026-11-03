@@ -36,7 +36,7 @@
   </a>
 -->
 
-<h3 align="center">哈基米</h3>
+<h3 align="center">GXDE AI Core</h3>
 
   <p align="center">
     Google Gemini CLI 的衍生分支，增强了审批模式并支持第三方模型。

@@ -85,8 +85,8 @@ export class GeminiAgent {
       protocolVersion: acp.PROTOCOL_VERSION,
       authMethods,
       agentInfo: {
-        name: 'hachimi-cli',
-        title: 'Hachimi CLI',
+        name: 'gxde-ai-core',
+        title: 'GXDE AI Core',
         version,
       },
       agentCapabilities: {

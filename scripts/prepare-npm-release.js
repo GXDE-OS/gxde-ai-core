@@ -53,8 +53,7 @@ const cliPkg = readJson(cliPkgPath);
 
 cliPkg.files = ['bundle/', 'LICENSE', 'NOTICE'];
 cliPkg.bin = {
-  hachimi: 'bundle/gemini.js',
-  哈基米: 'bundle/gemini.js',
+  'gxde-ai-core': 'bundle/gemini.js',
 };
 
 delete cliPkg.dependencies;
