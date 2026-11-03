@@ -5,11 +5,20 @@
  * SPDX-License-Identifier: Apache-2.0
  */
 
+import { randomUUID } from 'node:crypto';
 import {
   type AgentLoopContext,
   AuthType,
   clearCachedCredentialFile,
+  getActiveAccount,
   getVersion,
+  loadAccountKey,
+  PROVIDER_PRESETS,
+  type ProviderAccount,
+  readAccounts,
+  saveAccount,
+  deleteAccount,
+  selectAccount,
 } from '@google/gemini-cli-core';
 import * as acp from '@agentclientprotocol/sdk';
 import { z } from 'zod';
@@ -18,6 +27,52 @@ import type { CliArgs } from '../config/config.js';
 import { getAcpErrorMessage } from './acpErrors.js';
 import { AcpSessionManager, type AuthDetails } from './acpSessionManager.js';
 import { hasMeta } from './acpUtils.js';
+
+// Make the A.C.P able to control the auth providers
+// Now defining the communication schemas.
+const providerModelSchema = z
+  .object({
+    id: z.string().trim().min(1),
+    contextWindowSize: z.number().int().positive().optional(),
+    enableThinking: z.boolean().optional(),
+    thinkingMandatory: z.boolean().optional(),
+    reasoning: z
+      .object({
+        profile: z.string().optional(),
+        thinking: z.boolean().optional(),
+        efforts: z.array(z.string()).optional(),
+        defaultEffort: z.string().optional(),
+        canDisable: z.boolean().optional(),
+        toggleOnly: z.boolean().optional(),
+        disableField: z.string().optional(),
+      })
+      .optional(),
+  })
+  .passthrough();
+
+const providerAccountInputSchema = z.object({
+  id: z.string().uuid().optional(),
+  name: z.string().trim().min(1),
+  providerId: z.string().trim().min(1),
+  protocol: z.enum(['openai', 'anthropic', 'gemini']),
+  baseUrl: z.string().url(),
+  models: z.array(providerModelSchema).min(1),
+  model: z.string().trim().min(1),
+});
+
+const providerSaveParamsSchema = z.object({
+  account: providerAccountInputSchema,
+  apiKey: z.string().optional(),
+});
+
+const providerIdSchema = z.object({
+  id: z.string().uuid(),
+});
+
+const providerActivateParamsSchema = z.object({
+  id: z.string().uuid(),
+  model: z.string().trim().min(1).optional(),
+});
 
 export class GeminiAgent {
   private apiKey: string | undefined;
@@ -100,6 +155,19 @@ export class GeminiAgent {
           http: true,
           sse: true,
         },
+        _meta: {
+          'gxde-ai-core': {
+            providerAccounts: {
+              methods: [
+                'gxde-ai-core/auth/providers/list',
+                'gxde-ai-core/auth/providers/current',
+                'gxde-ai-core/auth/providers/save',
+                'gxde-ai-core/auth/providers/delete',
+                'gxde-ai-core/auth/providers/activate',
+              ],
+            },
+          },
+        },
       },
     };
   }
@@ -172,6 +240,129 @@ export class GeminiAgent {
       apiKey: this.apiKey,
       baseUrl: this.baseUrl,
       customHeaders: this.customHeaders,
+    };
+  }
+
+  async extMethod(
+    method: string,
+    params: Record<string, unknown>,
+  ): Promise<Record<string, unknown>> {
+    switch (method) {
+      case 'gxde-ai-core/auth/providers/list':
+        return this.listProviderAccounts();
+      case 'gxde-ai-core/auth/providers/current':
+        return this.currentProviderAccount();
+      case 'gxde-ai-core/auth/providers/save':
+        return this.saveProviderAccount(params);
+      case 'gxde-ai-core/auth/providers/delete':
+        return this.deleteProviderAccount(params);
+      case 'gxde-ai-core/auth/providers/activate':
+        return this.activateProviderAccount(params);
+      default:
+        throw new acp.RequestError(-32601, `Method not found: ${method}`);
+    }
+  }
+
+  private listProviderAccounts(): Record<string, unknown> {
+    const store = readAccounts();
+    return {
+      presets: PROVIDER_PRESETS,
+      accounts: store.accounts,
+      activeAccountId: store.activeId,
+    };
+  }
+
+  private async currentProviderAccount(): Promise<Record<string, unknown>> {
+    const account = getActiveAccount();
+    if (!account) {
+      return { account: null, hasApiKey: false };
+    }
+    const apiKey = await loadAccountKey(account.id);
+    return { account, hasApiKey: Boolean(apiKey) };
+  }
+
+  private async saveProviderAccount(
+    params: Record<string, unknown>,
+  ): Promise<Record<string, unknown>> {
+    const parsed = providerSaveParamsSchema.safeParse(params);
+    if (!parsed.success) {
+      throw new acp.RequestError(
+        -32602,
+        `Invalid provider account: ${getAcpErrorMessage(parsed.error)}`,
+      );
+    }
+
+    const account: ProviderAccount = {
+      ...parsed.data.account,
+      id: parsed.data.account.id ?? randomUUID(),
+    };
+
+    try {
+      await saveAccount(account, parsed.data.apiKey);
+    } catch (e) {
+      throw new acp.RequestError(-32000, getAcpErrorMessage(e));
+    }
+
+    return { account };
+  }
+
+  private async deleteProviderAccount(
+    params: Record<string, unknown>,
+  ): Promise<Record<string, unknown>> {
+    const parsed = providerIdSchema.safeParse(params);
+    if (!parsed.success) {
+      throw new acp.RequestError(
+        -32602,
+        `Invalid provider account ID: ${getAcpErrorMessage(parsed.error)}`,
+      );
+    }
+
+    const active = getActiveAccount();
+    if (active?.id === parsed.data.id) {
+      throw new acp.RequestError(
+        -32000,
+        'Switch to another account before deleting the active account.',
+      );
+    }
+
+    try {
+      await deleteAccount(parsed.data.id);
+    } catch (e) {
+      throw new acp.RequestError(-32000, getAcpErrorMessage(e));
+    }
+
+    return { deleted: true };
+  }
+
+  private activateProviderAccount(
+    params: Record<string, unknown>,
+  ): Record<string, unknown> {
+    const parsed = providerActivateParamsSchema.safeParse(params);
+    if (!parsed.success) {
+      throw new acp.RequestError(
+        -32602,
+        `Invalid provider account: ${getAcpErrorMessage(parsed.error)}`,
+      );
+    }
+
+    const store = readAccounts();
+    if (!store.accounts.some((account) => account.id === parsed.data.id)) {
+      throw new acp.RequestError(
+        -32000,
+        `Provider account not found: ${parsed.data.id}`,
+      );
+    }
+
+    try {
+      selectAccount(parsed.data.id, parsed.data.model);
+    } catch (e) {
+      throw new acp.RequestError(-32000, getAcpErrorMessage(e));
+    }
+
+    const active = getActiveAccount();
+    return {
+      activeAccountId: active?.id ?? parsed.data.id,
+      account: active ?? null,
     };
   }
 
