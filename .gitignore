@@ -69,3 +69,5 @@ Testing/
 
 # IDE config
 .cache/*
+example/ai-core-example/.gradle/*
+example/ai-core-example/.idea/*
