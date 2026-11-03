@@ -1,6 +1,7 @@
 /**
  * @license
  * Copyright 2025 Google LLC
+ * Modifications Copyright 2026 CharOfString <root@charofstring.cc>
  * SPDX-License-Identifier: Apache-2.0
  */
 
@@ -33,21 +34,12 @@ function createLocalMockConfig(overrides: Partial<Config> = {}): Config {
 }
 
 describe('validateNonInterActiveAuth', () => {
-  let originalEnvGeminiApiKey: string | undefined;
-  let originalEnvVertexAi: string | undefined;
-  let originalEnvGcp: string | undefined;
   let debugLoggerErrorSpy: ReturnType<typeof vi.spyOn>;
   let coreEventsEmitFeedbackSpy: MockInstance;
   let processExitSpy: MockInstance;
   let mockSettings: LoadedSettings;
 
   beforeEach(() => {
-    originalEnvGeminiApiKey = process.env['GEMINI_API_KEY'];
-    originalEnvVertexAi = process.env['GOOGLE_GENAI_USE_VERTEXAI'];
-    originalEnvGcp = process.env['GOOGLE_GENAI_USE_GCA'];
-    delete process.env['GEMINI_API_KEY'];
-    delete process.env['GOOGLE_GENAI_USE_VERTEXAI'];
-    delete process.env['GOOGLE_GENAI_USE_GCA'];
     debugLoggerErrorSpy = vi
       .spyOn(debugLogger, 'error')
       .mockImplementation(() => {});
@@ -82,25 +74,10 @@ describe('validateNonInterActiveAuth', () => {
   });
 
   afterEach(() => {
-    if (originalEnvGeminiApiKey !== undefined) {
-      process.env['GEMINI_API_KEY'] = originalEnvGeminiApiKey;
-    } else {
-      delete process.env['GEMINI_API_KEY'];
-    }
-    if (originalEnvVertexAi !== undefined) {
-      process.env['GOOGLE_GENAI_USE_VERTEXAI'] = originalEnvVertexAi;
-    } else {
-      delete process.env['GOOGLE_GENAI_USE_VERTEXAI'];
-    }
-    if (originalEnvGcp !== undefined) {
-      process.env['GOOGLE_GENAI_USE_GCA'] = originalEnvGcp;
-    } else {
-      delete process.env['GOOGLE_GENAI_USE_GCA'];
-    }
     vi.restoreAllMocks();
   });
 
-  it('exits if no auth type is configured or env vars set', async () => {
+  it('exits if no auth type is configured', async () => {
     const nonInteractiveConfig = createLocalMockConfig({
       getOutputFormat: vi.fn().mockReturnValue(OutputFormat.TEXT),
       getContentGeneratorConfig: vi
@@ -121,122 +98,17 @@ describe('validateNonInterActiveAuth', () => {
       );
     }
     expect(debugLoggerErrorSpy).toHaveBeenCalledWith(
-      expect.stringContaining('Please set an Auth method'),
+      expect.stringContaining('Please select a provider account'),
     );
     expect(processExitSpy).toHaveBeenCalledWith(
       ExitCodes.FATAL_AUTHENTICATION_ERROR,
     );
   });
 
-  it('uses LOGIN_WITH_GOOGLE if GOOGLE_GENAI_USE_GCA is set', async () => {
-    process.env['GOOGLE_GENAI_USE_GCA'] = 'true';
+  it('succeeds with a configured provider account', async () => {
     const nonInteractiveConfig = createLocalMockConfig({});
     await validateNonInteractiveAuth(
-      undefined,
-      undefined,
-      nonInteractiveConfig,
-      mockSettings,
-    );
-    expect(processExitSpy).not.toHaveBeenCalled();
-    expect(debugLoggerErrorSpy).not.toHaveBeenCalled();
-  });
-
-  it('uses USE_GEMINI if GEMINI_API_KEY is set', async () => {
-    process.env['GEMINI_API_KEY'] = 'fake-key';
-    const nonInteractiveConfig = createLocalMockConfig({});
-    await validateNonInteractiveAuth(
-      undefined,
-      undefined,
-      nonInteractiveConfig,
-      mockSettings,
-    );
-    expect(processExitSpy).not.toHaveBeenCalled();
-    expect(debugLoggerErrorSpy).not.toHaveBeenCalled();
-  });
-
-  it('uses USE_VERTEX_AI if GOOGLE_GENAI_USE_VERTEXAI is true (with GOOGLE_CLOUD_PROJECT and GOOGLE_CLOUD_LOCATION)', async () => {
-    process.env['GOOGLE_GENAI_USE_VERTEXAI'] = 'true';
-    process.env['GOOGLE_CLOUD_PROJECT'] = 'test-project';
-    process.env['GOOGLE_CLOUD_LOCATION'] = 'us-central1';
-    const nonInteractiveConfig = createLocalMockConfig({});
-    await validateNonInteractiveAuth(
-      undefined,
-      undefined,
-      nonInteractiveConfig,
-      mockSettings,
-    );
-    expect(processExitSpy).not.toHaveBeenCalled();
-    expect(debugLoggerErrorSpy).not.toHaveBeenCalled();
-  });
-
-  it('uses USE_VERTEX_AI if GOOGLE_GENAI_USE_VERTEXAI is true and GOOGLE_API_KEY is set', async () => {
-    process.env['GOOGLE_GENAI_USE_VERTEXAI'] = 'true';
-    process.env['GOOGLE_API_KEY'] = 'vertex-api-key';
-    const nonInteractiveConfig = createLocalMockConfig({});
-    await validateNonInteractiveAuth(
-      undefined,
-      undefined,
-      nonInteractiveConfig,
-      mockSettings,
-    );
-    expect(processExitSpy).not.toHaveBeenCalled();
-    expect(debugLoggerErrorSpy).not.toHaveBeenCalled();
-  });
-
-  it('uses LOGIN_WITH_GOOGLE if GOOGLE_GENAI_USE_GCA is set, even with other env vars', async () => {
-    process.env['GOOGLE_GENAI_USE_GCA'] = 'true';
-    process.env['GEMINI_API_KEY'] = 'fake-key';
-    process.env['GOOGLE_GENAI_USE_VERTEXAI'] = 'true';
-    process.env['GOOGLE_CLOUD_PROJECT'] = 'test-project';
-    process.env['GOOGLE_CLOUD_LOCATION'] = 'us-central1';
-    const nonInteractiveConfig = createLocalMockConfig({});
-    await validateNonInteractiveAuth(
-      undefined,
-      undefined,
-      nonInteractiveConfig,
-      mockSettings,
-    );
-    expect(processExitSpy).not.toHaveBeenCalled();
-    expect(debugLoggerErrorSpy).not.toHaveBeenCalled();
-  });
-
-  it('uses USE_VERTEX_AI if both GEMINI_API_KEY and GOOGLE_GENAI_USE_VERTEXAI are set', async () => {
-    process.env['GEMINI_API_KEY'] = 'fake-key';
-    process.env['GOOGLE_GENAI_USE_VERTEXAI'] = 'true';
-    process.env['GOOGLE_CLOUD_PROJECT'] = 'test-project';
-    process.env['GOOGLE_CLOUD_LOCATION'] = 'us-central1';
-    const nonInteractiveConfig = createLocalMockConfig({});
-    await validateNonInteractiveAuth(
-      undefined,
-      undefined,
-      nonInteractiveConfig,
-      mockSettings,
-    );
-    expect(processExitSpy).not.toHaveBeenCalled();
-    expect(debugLoggerErrorSpy).not.toHaveBeenCalled();
-  });
-
-  it('uses USE_GEMINI if GOOGLE_GENAI_USE_VERTEXAI is false, GEMINI_API_KEY is set, and project/location are available', async () => {
-    process.env['GOOGLE_GENAI_USE_VERTEXAI'] = 'false';
-    process.env['GEMINI_API_KEY'] = 'fake-key';
-    process.env['GOOGLE_CLOUD_PROJECT'] = 'test-project';
-    process.env['GOOGLE_CLOUD_LOCATION'] = 'us-central1';
-    const nonInteractiveConfig = createLocalMockConfig({});
-    await validateNonInteractiveAuth(
-      undefined,
-      undefined,
-      nonInteractiveConfig,
-      mockSettings,
-    );
-    expect(processExitSpy).not.toHaveBeenCalled();
-    expect(debugLoggerErrorSpy).not.toHaveBeenCalled();
-  });
-
-  it('uses configuredAuthType over environment variables', async () => {
-    process.env['GEMINI_API_KEY'] = 'fake-key';
-    const nonInteractiveConfig = createLocalMockConfig({});
-    await validateNonInteractiveAuth(
-      AuthType.LOGIN_WITH_GOOGLE,
+      AuthType.PROVIDER_ACCOUNT,
       undefined,
       nonInteractiveConfig,
       mockSettings,
@@ -246,7 +118,6 @@ describe('validateNonInterActiveAuth', () => {
   });
 
   it('exits if validateAuthMethod returns error', async () => {
-    // Mock validateAuthMethod to return error
     vi.spyOn(auth, 'validateAuthMethod').mockResolvedValue('Auth error!');
     const nonInteractiveConfig = createLocalMockConfig({
       getOutputFormat: vi.fn().mockReturnValue(OutputFormat.TEXT),
@@ -256,7 +127,7 @@ describe('validateNonInterActiveAuth', () => {
     });
     try {
       await validateNonInteractiveAuth(
-        AuthType.USE_GEMINI,
+        AuthType.PROVIDER_ACCOUNT,
         undefined,
         nonInteractiveConfig,
         mockSettings,
@@ -274,16 +145,13 @@ describe('validateNonInterActiveAuth', () => {
   });
 
   it('skips validation if useExternalAuth is true', async () => {
-    // Mock validateAuthMethod to return error to ensure it's not being called
     const validateAuthMethodSpy = vi
       .spyOn(auth, 'validateAuthMethod')
       .mockResolvedValue('Auth error!');
     const nonInteractiveConfig = createLocalMockConfig({});
-    // Even with an invalid auth type, it should not exit
-    // because validation is skipped.
     await validateNonInteractiveAuth(
       'invalid-auth-type' as AuthType,
-      true, // useExternalAuth = true
+      true,
       nonInteractiveConfig,
       mockSettings,
     );
@@ -294,20 +162,6 @@ describe('validateNonInterActiveAuth', () => {
     expect(processExitSpy).not.toHaveBeenCalled();
   });
 
-  it('succeeds if effectiveAuthType matches enforcedType', async () => {
-    mockSettings.merged.security.auth.enforcedType = AuthType.USE_GEMINI;
-    process.env['GEMINI_API_KEY'] = 'fake-key';
-    const nonInteractiveConfig = createLocalMockConfig({});
-    await validateNonInteractiveAuth(
-      undefined,
-      undefined,
-      nonInteractiveConfig,
-      mockSettings,
-    );
-    expect(processExitSpy).not.toHaveBeenCalled();
-    expect(debugLoggerErrorSpy).not.toHaveBeenCalled();
-  });
-
   it('exits if configuredAuthType does not match enforcedType', async () => {
     mockSettings.merged.security.auth.enforcedType = AuthType.LOGIN_WITH_GOOGLE;
     const nonInteractiveConfig = createLocalMockConfig({
@@ -315,7 +169,7 @@ describe('validateNonInterActiveAuth', () => {
     });
     try {
       await validateNonInteractiveAuth(
-        AuthType.USE_GEMINI,
+        AuthType.PROVIDER_ACCOUNT,
         undefined,
         nonInteractiveConfig,
         mockSettings,
@@ -327,34 +181,7 @@ describe('validateNonInterActiveAuth', () => {
       );
     }
     expect(debugLoggerErrorSpy).toHaveBeenCalledWith(
-      "The enforced authentication type is 'oauth-personal', but the current type is 'gemini-api-key'. Please re-authenticate with the correct type.",
-    );
-    expect(processExitSpy).toHaveBeenCalledWith(
-      ExitCodes.FATAL_AUTHENTICATION_ERROR,
-    );
-  });
-
-  it('exits if auth from env var does not match enforcedType', async () => {
-    mockSettings.merged.security.auth.enforcedType = AuthType.LOGIN_WITH_GOOGLE;
-    process.env['GEMINI_API_KEY'] = 'fake-key';
-    const nonInteractiveConfig = createLocalMockConfig({
-      getOutputFormat: vi.fn().mockReturnValue(OutputFormat.TEXT),
-    });
-    try {
-      await validateNonInteractiveAuth(
-        undefined,
-        undefined,
-        nonInteractiveConfig,
-        mockSettings,
-      );
-      expect.fail('Should have exited');
-    } catch (e) {
-      expect((e as Error).message).toContain(
-        `process.exit(${ExitCodes.FATAL_AUTHENTICATION_ERROR}) called`,
-      );
-    }
-    expect(debugLoggerErrorSpy).toHaveBeenCalledWith(
-      "The enforced authentication type is 'oauth-personal', but the current type is 'gemini-api-key'. Please re-authenticate with the correct type.",
+      "The enforced authentication type is 'oauth-personal', but the current type is 'hachimi-provider-account'. Please re-authenticate with the correct type.",
     );
     expect(processExitSpy).toHaveBeenCalledWith(
       ExitCodes.FATAL_AUTHENTICATION_ERROR,
@@ -385,13 +212,12 @@ describe('validateNonInterActiveAuth', () => {
       expect(thrown?.message).toBe(
         `process.exit(${ExitCodes.FATAL_AUTHENTICATION_ERROR}) called`,
       );
-      // Checking coreEventsEmitFeedbackSpy arguments
       const errorArg = coreEventsEmitFeedbackSpy.mock.calls[0]?.[1] as string;
       const payload = JSON.parse(errorArg);
       expect(payload.error.type).toBe('Error');
       expect(payload.error.code).toBe(ExitCodes.FATAL_AUTHENTICATION_ERROR);
       expect(payload.error.message).toContain(
-        'Please set an Auth method in your',
+        'Please select a provider account',
       );
     });
 
@@ -420,7 +246,6 @@ describe('validateNonInterActiveAuth', () => {
         `process.exit(${ExitCodes.FATAL_AUTHENTICATION_ERROR}) called`,
       );
       {
-        // Checking coreEventsEmitFeedbackSpy arguments
         const errorArg = coreEventsEmitFeedbackSpy.mock.calls[0]?.[1] as string;
         const payload = JSON.parse(errorArg);
         expect(payload.error.type).toBe('Error');
@@ -433,7 +258,6 @@ describe('validateNonInterActiveAuth', () => {
 
     it(`prints JSON error when validateAuthMethod fails and exits with code ${ExitCodes.FATAL_AUTHENTICATION_ERROR}`, async () => {
       vi.spyOn(auth, 'validateAuthMethod').mockResolvedValue('Auth error!');
-      process.env['GEMINI_API_KEY'] = 'fake-key';
 
       const nonInteractiveConfig = createLocalMockConfig({
         getOutputFormat: vi.fn().mockReturnValue(OutputFormat.JSON),
@@ -445,7 +269,7 @@ describe('validateNonInterActiveAuth', () => {
       let thrown: Error | undefined;
       try {
         await validateNonInteractiveAuth(
-          AuthType.USE_GEMINI,
+          AuthType.PROVIDER_ACCOUNT,
           undefined,
           nonInteractiveConfig,
           mockSettings,
@@ -458,7 +282,6 @@ describe('validateNonInterActiveAuth', () => {
         `process.exit(${ExitCodes.FATAL_AUTHENTICATION_ERROR}) called`,
       );
       {
-        // Checking coreEventsEmitFeedbackSpy arguments
         const errorArg = coreEventsEmitFeedbackSpy.mock.calls[0]?.[1] as string;
         const payload = JSON.parse(errorArg);
         expect(payload.error.type).toBe('Error');

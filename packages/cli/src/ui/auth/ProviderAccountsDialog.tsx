@@ -237,7 +237,7 @@ export function ProviderAccountsDialog({
               ] as [string, string],
           ),
           ['add', 'Add account from preset / custom provider'],
-          ['back', 'Back to Gemini authentication'],
+          ['back', 'Back to authentication'],
         ])}
         onSelect={(id) => {
           if (id === 'back') {
@@ -507,7 +507,7 @@ export function ProviderAccountsDialog({
               void run(async () => {
                 if (account?.id === getActiveAccount()?.id) {
                   throw new Error(
-                    'Switch to another account or Gemini authentication before deleting the active account.',
+                    'Switch to another account before deleting the active account.',
                   );
                 }
 

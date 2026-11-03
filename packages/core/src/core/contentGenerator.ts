@@ -33,7 +33,10 @@ import { getVersion, resolveModel } from '../../index.js';
 import type { LlmRole } from '../telemetry/llmRole.js';
 import { ModelMappingContentGenerator } from './modelMappingContentGenerator.js';
 import { getBackendModelMappings } from '../config/models.js';
-import { loadActiveAccountCredentials } from '../providers/accounts.js';
+import {
+  getActiveAccount,
+  loadActiveAccountCredentials,
+} from '../providers/accounts.js';
 import type { ProviderAccount } from '../providers/types.js';
 import { ProviderContentGenerator } from '../providers/contentGenerator.js';
 
@@ -76,34 +79,10 @@ export enum AuthType {
 }
 
 /**
- * Detects the best authentication type based on environment variables.
- *
- * Checks in order:
- * 1. GOOGLE_GENAI_USE_GCA=true -> LOGIN_WITH_GOOGLE
- * 2. GOOGLE_GENAI_USE_VERTEXAI=true -> USE_VERTEX_AI
- * 3. GEMINI_API_KEY -> USE_GEMINI
+ * Now auth ONLY avaliable in customized endpoints.
  */
-
 export function getAuthTypeFromEnv(): AuthType | undefined {
-  if (process.env['GOOGLE_GENAI_USE_GCA'] === 'true') {
-    return AuthType.LOGIN_WITH_GOOGLE;
-  }
-  if (process.env['GOOGLE_GENAI_USE_VERTEXAI'] === 'true') {
-    return AuthType.USE_VERTEX_AI;
-  }
-  if (process.env['GOOGLE_GEMINI_BASE_URL']) {
-    return AuthType.GATEWAY;
-  }
-  if (process.env['GEMINI_API_KEY']) {
-    return AuthType.USE_GEMINI;
-  }
-  if (
-    process.env['CLOUD_SHELL'] === 'true' ||
-    process.env['GEMINI_CLI_USE_COMPUTE_ADC'] === 'true'
-  ) {
-    return AuthType.COMPUTE_ADC;
-  }
-  return undefined;
+  return getActiveAccount() ? AuthType.PROVIDER_ACCOUNT : undefined;
 }
 
 export type ContentGeneratorConfig = {

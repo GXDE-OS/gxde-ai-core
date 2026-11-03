@@ -6,28 +6,15 @@
  */
 
 import type React from 'react';
-import { useCallback, useState } from 'react';
+import { useState } from 'react';
 import { Box, Text } from 'ink';
 import { theme } from '../semantic-colors.js';
 import { RadioButtonSelect } from '../components/shared/RadioButtonSelect.js';
-import {
-  SettingScope,
-  type LoadableSettingScope,
-  type LoadedSettings,
-} from '../../config/settings.js';
-import {
-  AuthType,
-  DEFAULT_GEMINI_MODEL_AUTO,
-  clearCachedCredentialFile,
-  type Config,
-  debugLogger,
-} from '@google/gemini-cli-core';
+import type { LoadedSettings } from '../../config/settings.js';
+import { AuthType, type Config } from '@google/gemini-cli-core';
 import { useKeypress } from '../hooks/useKeypress.js';
 import { ProviderAccountsDialog } from './ProviderAccountsDialog.js';
-import { getActiveAccount, selectAccount } from '@google/gemini-cli-core';
 import { AuthState } from '../types.js';
-import { validateAuthMethodWithSettings } from './useAuth.js';
-import { relaunchApp } from '../../utils/processUtils.js';
 
 interface AuthDialogProps {
   config: Config;
@@ -47,198 +34,36 @@ export function AuthDialog({
   setAuthContext,
 }: AuthDialogProps): React.JSX.Element {
   const [managingProviders, setManagingProviders] = useState(false);
-  const [exiting, setExiting] = useState(false);
-  let items = [
+
+  const items = [
     {
-      label: 'Provider accounts (DeepSeek, presets, custom API)',
+      label: 'Provider accounts (domestic models and custom endpoints)',
       value: AuthType.PROVIDER_ACCOUNT,
       key: AuthType.PROVIDER_ACCOUNT,
     },
-    {
-      label: 'Sign in with Google',
-      value: AuthType.LOGIN_WITH_GOOGLE,
-      key: AuthType.LOGIN_WITH_GOOGLE,
-    },
-    ...(process.env['CLOUD_SHELL'] === 'true'
-      ? [
-          {
-            label: 'Use Cloud Shell user credentials',
-            value: AuthType.COMPUTE_ADC,
-            key: AuthType.COMPUTE_ADC,
-          },
-        ]
-      : process.env['GEMINI_CLI_USE_COMPUTE_ADC'] === 'true'
-        ? [
-            {
-              label: 'Use metadata server application default credentials',
-              value: AuthType.COMPUTE_ADC,
-              key: AuthType.COMPUTE_ADC,
-            },
-          ]
-        : []),
-    {
-      label: 'Use Gemini API Key',
-      value: AuthType.USE_GEMINI,
-      key: AuthType.USE_GEMINI,
-    },
-    {
-      label: 'Vertex AI',
-      value: AuthType.USE_VERTEX_AI,
-      key: AuthType.USE_VERTEX_AI,
-    },
   ];
-
-  if (settings.merged.security.auth.enforcedType) {
-    items = items.filter(
-      (item) => item.value === settings.merged.security.auth.enforcedType,
-    );
-  }
-
-  let defaultAuthType: AuthType | null = null;
-  const defaultAuthTypeEnv = process.env['GEMINI_DEFAULT_AUTH_TYPE'];
-  if (
-    defaultAuthTypeEnv &&
-    // eslint-disable-next-line @typescript-eslint/no-unsafe-type-assertion
-    Object.values(AuthType).includes(defaultAuthTypeEnv as AuthType)
-  ) {
-    // eslint-disable-next-line @typescript-eslint/no-unsafe-type-assertion
-    defaultAuthType = defaultAuthTypeEnv as AuthType;
-  }
-
-  let initialAuthIndex = items.findIndex((item) => {
-    if (settings.merged.security.auth.selectedType) {
-      return item.value === settings.merged.security.auth.selectedType;
-    }
-
-    if (defaultAuthType) {
-      return item.value === defaultAuthType;
-    }
-
-    if (process.env['GEMINI_API_KEY']) {
-      return item.value === AuthType.USE_GEMINI;
-    }
-
-    return item.value === AuthType.LOGIN_WITH_GOOGLE;
-  });
-  if (settings.merged.security.auth.enforcedType) {
-    initialAuthIndex = 0;
-  }
-
-  const onSelect = useCallback(
-    async (authType: AuthType | undefined, scope: LoadableSettingScope) => {
-      if (exiting) {
-        return;
-      }
-      if (authType) {
-        if (getActiveAccount()) {
-          selectAccount(undefined);
-          settings.refreshProviderAccount();
-          config.setModel(
-            settings.merged.model.name ?? DEFAULT_GEMINI_MODEL_AUTO,
-            true,
-          );
-        }
-
-        const needsRestart =
-          authType === AuthType.LOGIN_WITH_GOOGLE ||
-          (authType === AuthType.USE_VERTEX_AI &&
-            process.env['CLOUD_SHELL'] === 'true');
-
-        if (needsRestart) {
-          setAuthContext({ requiresRestart: true });
-        } else {
-          setAuthContext({});
-        }
-
-        const currentAuthType = settings.merged.security?.auth?.selectedType;
-        if (
-          authType === AuthType.LOGIN_WITH_GOOGLE ||
-          currentAuthType === AuthType.LOGIN_WITH_GOOGLE
-        ) {
-          try {
-            await clearCachedCredentialFile();
-          } catch (error) {
-            debugLogger.error('Failed to clear cached credentials:', error);
-            onAuthError(
-              'Failed to clear cached credentials: ' +
-                (error instanceof Error ? error.message : String(error)),
-            );
-            if (authType === AuthType.LOGIN_WITH_GOOGLE) {
-              return;
-            }
-          }
-        }
-
-        settings.setValue(scope, 'security.auth.selectedType', authType);
-        if (
-          authType === AuthType.LOGIN_WITH_GOOGLE &&
-          config.isBrowserLaunchSuppressed()
-        ) {
-          setExiting(true);
-          setTimeout(() => {
-            void relaunchApp({ overrideAuthType: authType }).catch((err) => {
-              debugLogger.error('Failed to trigger supervisor relaunch:', err);
-              process.exit(1);
-            });
-          }, 100);
-          return;
-        }
-
-        if (authType === AuthType.USE_GEMINI) {
-          // Always show the API key input dialog so the user can
-          // explicitly enter or confirm their key, regardless of
-          // whether GEMINI_API_KEY env var or a stored key exists.
-          setAuthState(AuthState.AwaitingApiKeyInput);
-          return;
-        }
-      }
-      setAuthState(AuthState.Unauthenticated);
-    },
-    [settings, config, setAuthState, exiting, setAuthContext, onAuthError],
-  );
-
-  const handleAuthSelect = async (authMethod: AuthType) => {
-    if (authMethod === AuthType.PROVIDER_ACCOUNT) {
-      setManagingProviders(true);
-      return;
-    }
-
-    const error = await validateAuthMethodWithSettings(
-      authMethod,
-      settings,
-    ).catch((e) => (e instanceof Error ? e.message : String(e)));
-    if (error) {
-      onAuthError(error);
-    } else {
-      onAuthError(null);
-      try {
-        await onSelect(authMethod, SettingScope.User);
-      } catch (e) {
-        onAuthError(e instanceof Error ? e.message : String(e));
-      }
-    }
-  };
 
   useKeypress(
     (key) => {
-      if (key.name === 'escape') {
-        // Prevent exit if there is an error message.
-        // This means they user is not authenticated yet.
-        if (authError) {
-          return true;
-        }
-        if (settings.merged.security.auth.selectedType === undefined) {
-          // Prevent exiting if no auth method is set
-          onAuthError(
-            'You must select an auth method to proceed. Press Ctrl+C twice to exit.',
-          );
-          return true;
-        }
-        // eslint-disable-next-line @typescript-eslint/no-floating-promises
-        onSelect(undefined, SettingScope.User);
+      if (key.name !== 'escape') {
+        return false;
+      }
+
+      // Prevent exit if there is an error message.
+      if (authError) {
         return true;
       }
-      return false;
+      if (settings.merged.security.auth.selectedType === undefined) {
+        // Prevent exiting if no auth method is set.
+        onAuthError(
+          'You must select a provider account to proceed. Press Ctrl+C twice to exit.',
+        );
+        return true;
+      }
+
+      onAuthError(null);
+      setAuthState(AuthState.Authenticated);
+      return true;
     },
     { isActive: !managingProviders },
   );
@@ -258,23 +83,6 @@ export function AuthDialog({
     );
   }
 
-  if (exiting) {
-    return (
-      <Box
-        borderStyle="round"
-        borderColor={theme.ui.focus}
-        flexDirection="row"
-        padding={1}
-        width="100%"
-        alignItems="flex-start"
-      >
-        <Text color={theme.text.primary}>
-          Logging in with Google... Restarting Hachimi CLI to continue.
-        </Text>
-      </Box>
-    );
-  }
-
   return (
     <Box
       borderStyle="round"
@@ -291,14 +99,14 @@ export function AuthDialog({
         </Text>
         <Box marginTop={1}>
           <Text color={theme.text.primary}>
-            How would you like to authenticate for this project?
+            Select a provider account to authenticate for this project.
           </Text>
         </Box>
         <Box marginTop={1}>
           <RadioButtonSelect
             items={items}
-            initialIndex={initialAuthIndex}
-            onSelect={handleAuthSelect}
+            initialIndex={0}
+            onSelect={() => setManagingProviders(true)}
             onHighlight={() => {
               onAuthError(null);
             }}
@@ -311,16 +119,6 @@ export function AuthDialog({
         )}
         <Box marginTop={1}>
           <Text color={theme.text.secondary}>(Use Enter to select)</Text>
-        </Box>
-        <Box marginTop={1}>
-          <Text color={theme.text.primary}>
-            Terms of Services and Privacy Notice for Gemini CLI
-          </Text>
-        </Box>
-        <Box marginTop={1}>
-          <Text color={theme.text.link}>
-            {'https://geminicli.com/docs/resources/tos-privacy/'}
-          </Text>
         </Box>
       </Box>
     </Box>

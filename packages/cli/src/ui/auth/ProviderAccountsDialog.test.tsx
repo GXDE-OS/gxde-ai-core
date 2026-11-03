@@ -18,7 +18,6 @@ import {
 import { createMockSettings } from '../../test-utils/settings.js';
 import { renderWithProviders } from '../../test-utils/render.js';
 import { RadioButtonSelect } from '../components/shared/RadioButtonSelect.js';
-import { AuthDialog } from './AuthDialog.js';
 import { TextInput } from '../components/shared/TextInput.js';
 import {
   ProviderAccountsDialog,
@@ -116,11 +115,15 @@ describe('provider account dialog', () => {
         'moonshot',
         'minimax',
         'zai',
-        'openrouter',
+        'modelscope',
+        'idealab',
         'coding-plan',
         'qwencloud-token-plan',
         'custom',
       ]),
+    );
+    expect(options.map((o) => o.value)).not.toEqual(
+      expect.arrayContaining(['grok', 'openrouter', 'requesty']),
     );
     await choose('deepseek');
     await input('Work');
@@ -204,32 +207,6 @@ describe('provider account dialog', () => {
       activateProviderAccount(configMock(), settings, personal, 'chat'),
     ).rejects.toThrow('authentication policy');
     expect(selectAccount).not.toHaveBeenCalled();
-  });
-
-  it('restores the Gemini model when leaving provider authentication', async () => {
-    state.active = personal;
-    state.accounts = [personal];
-    const settings = createMockSettings({
-      model: { name: 'gemini-original' },
-      security: { auth: { selectedType: AuthType.USE_GEMINI } },
-    });
-
-    vi.spyOn(settings, 'setValue').mockImplementation(() => {});
-    const config = configMock();
-    const rendered = await renderWithProviders(
-      <AuthDialog
-        config={config}
-        settings={settings}
-        setAuthState={vi.fn()}
-        authError={null}
-        onAuthError={vi.fn()}
-        setAuthContext={vi.fn()}
-      />,
-    );
-    await choose(AuthType.USE_GEMINI);
-    expect(getActiveAccount()).toBeUndefined();
-    expect(config.setModel).toHaveBeenCalledWith('gemini-original', true);
-    rendered.unmount();
   });
 
   it('restores the active account only in memory, leaving user and workspace settings intact', () => {

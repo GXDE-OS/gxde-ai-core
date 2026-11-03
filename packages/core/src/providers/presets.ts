@@ -570,39 +570,6 @@ export const PROVIDER_PRESETS: ProviderPreset[] = [
     ],
   },
   {
-    id: 'grok',
-    label: 'Grok (xAI) API Key',
-    protocol: 'openai',
-    baseUrl: 'https://api.x.ai/v1',
-    envKey: 'XAI_API_KEY',
-    models: [
-      {
-        id: 'grok-4.5',
-        contextWindowSize: 500000,
-      },
-      {
-        id: 'grok-4.3',
-        contextWindowSize: 1000000,
-      },
-      {
-        id: 'grok-4.20-0309-reasoning',
-        contextWindowSize: 1000000,
-      },
-      {
-        id: 'grok-4.20-0309-non-reasoning',
-        contextWindowSize: 1000000,
-      },
-      {
-        id: 'grok-4.20-multi-agent-0309',
-        contextWindowSize: 1000000,
-      },
-      {
-        id: 'grok-build-0.1',
-        contextWindowSize: 262144,
-      },
-    ],
-  },
-  {
     id: 'idealab',
     label: 'Idealab API Key',
     protocol: 'openai',
@@ -759,23 +726,6 @@ export const PROVIDER_PRESETS: ProviderPreset[] = [
           toggleOnly: true,
           disableField: 'thinking',
         },
-      },
-    ],
-  },
-  {
-    id: 'openrouter',
-    label: 'OpenRouter',
-    protocol: 'openai',
-    baseUrl: 'https://openrouter.ai/api/v1',
-    envKey: 'OPENROUTER_API_KEY',
-    models: [
-      {
-        id: 'z-ai/glm-4.5-air:free',
-        contextWindowSize: 128000,
-      },
-      {
-        id: 'openai/gpt-oss-120b:free',
-        contextWindowSize: 131072,
       },
     ],
   },
@@ -951,23 +901,6 @@ export const PROVIDER_PRESETS: ProviderPreset[] = [
         id: 'glm-5.3',
         contextWindowSize: 1000000,
         enableThinking: true,
-      },
-    ],
-  },
-  {
-    id: 'requesty',
-    label: 'Requesty',
-    protocol: 'openai',
-    baseUrl: 'https://router.requesty.ai/v1',
-    envKey: 'REQUESTY_API_KEY',
-    models: [
-      {
-        id: 'openai/gpt-4o-mini',
-        contextWindowSize: 128000,
-      },
-      {
-        id: 'openai/gpt-4o',
-        contextWindowSize: 128000,
       },
     ],
   },

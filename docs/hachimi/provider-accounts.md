@@ -1,7 +1,8 @@
 # Provider accounts
 
-Hachimi supports named API-key accounts without replacing Gemini CLI's existing
-login settings. Run `hachimi`, then use `/auth` → **Provider accounts**.
+Hachimi authenticates through named API-key accounts. Run `hachimi`, then use
+`/auth` → **Provider accounts**. This is the only authentication method; Google
+login, Gemini API keys, and Vertex AI are not available.
 
 ## Add an account
 
@@ -25,11 +26,8 @@ The initial catalog is adapted from the supplied local Qwen Code checkout:
 - Kimi / Moonshot
 - MiniMax
 - Z.AI
-- Grok / xAI
 - ModelScope
 - iDealab
-- OpenRouter
-- Requesty
 - Alibaba ModelStudio: Standard API Key, Coding Plan, Token Plan
 - QwenCloud: Standard API Key, Token Plan
 
@@ -39,8 +37,8 @@ models are omitted from this chat-model selector.
 
 Custom providers support OpenAI-compatible **Chat Completions**, Anthropic
 **Messages**, and the Gemini API. OpenAI Responses and Qwen OAuth are not part
-of this account manager. The original Google login, Gemini API-key and Vertex AI
-options remain available in `/auth`.
+of this account manager. Use a custom provider to connect any additional
+endpoint.
 
 ## Switch, edit and remove accounts
 
@@ -57,15 +55,15 @@ positive `contextWindowSize` on a model in the account metadata file.
 
 Editing an account with a blank API-key field retains its existing key. Editing
 the active account refreshes its runtime configuration. Switch away from an
-account before deleting it; deletion removes its saved key. `/auth signout`
-deactivates a provider account while preserving it for later selection.
+account before deleting it; deletion removes its saved key.
 
 Switching providers keeps conversation history: subsequent requests send that
 history to the selected endpoint. The selector displays this before switching.
 
-To return to Gemini, go back to the main `/auth` menu and select the desired
-Google/Gemini/Vertex authentication method. Hachimi restores the Gemini model
-setting rather than persisting the provider's model into Gemini settings.
+To stop using a provider account, run `/auth signout`. This deactivates the
+active provider account while preserving it for later selection. Provider
+accounts are the only authentication method, so there is no separate Gemini
+login to return to.
 
 ## Storage and compatibility
 
@@ -78,7 +76,7 @@ metadata, shown in review screens, or placed in command history.
 
 `GEMINI_CLI_HOME` also relocates this storage. Existing `GEMINI.md`, `.gemini/`,
 and `~/.gemini/settings.json` behavior remains compatible. Provider selection is
-applied to Hachimi's in-memory settings; it does not overwrite Gemini's saved
+applied to Hachimi's in-memory settings; it does not overwrite the saved
 authentication type or preferred model. Enforced authentication and external
 authentication settings take precedence over provider accounts.
 

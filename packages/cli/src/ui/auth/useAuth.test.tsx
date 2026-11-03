@@ -1,6 +1,7 @@
 /**
  * @license
  * Copyright 2025 Google LLC
+ * Modifications Copyright 2026 CharOfString <root@charofstring.cc>
  * SPDX-License-Identifier: Apache-2.0
  */
 
@@ -8,26 +9,11 @@ import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest';
 import { act } from 'react';
 import { renderHook } from '../../test-utils/render.js';
 import { useAuthCommand, validateAuthMethodWithSettings } from './useAuth.js';
-import {
-  AuthType,
-  type Config,
-  ProjectIdRequiredError,
-} from '@google/gemini-cli-core';
+import { AuthType, type Config } from '@google/gemini-cli-core';
 import { AuthState } from '../types.js';
 import type { LoadedSettings } from '../../config/settings.js';
 
-// Mock dependencies
-const mockLoadApiKey = vi.fn();
 const mockValidateAuthMethod = vi.fn();
-
-vi.mock('@google/gemini-cli-core', async (importOriginal) => {
-  const actual =
-    await importOriginal<typeof import('@google/gemini-cli-core')>();
-  return {
-    ...actual,
-    loadApiKey: () => mockLoadApiKey(),
-  };
-});
 
 vi.mock('../../config/auth.js', () => ({
   validateAuthMethod: (authType: AuthType) => mockValidateAuthMethod(authType),
@@ -36,8 +22,6 @@ vi.mock('../../config/auth.js', () => ({
 describe('useAuth', () => {
   beforeEach(() => {
     vi.resetAllMocks();
-    delete process.env['GEMINI_API_KEY'];
-    delete process.env['GEMINI_DEFAULT_AUTH_TYPE'];
   });
 
   afterEach(() => {
@@ -57,7 +41,7 @@ describe('useAuth', () => {
       } as LoadedSettings;
 
       const error = await validateAuthMethodWithSettings(
-        AuthType.USE_GEMINI,
+        AuthType.PROVIDER_ACCOUNT,
         settings,
       );
       expect(error).toContain('Authentication is enforced to be oauth');
@@ -75,29 +59,13 @@ describe('useAuth', () => {
       } as LoadedSettings;
 
       const error = await validateAuthMethodWithSettings(
-        AuthType.LOGIN_WITH_GOOGLE,
+        AuthType.PROVIDER_ACCOUNT,
         settings,
       );
       expect(error).toBeNull();
     });
 
-    it('should return null if authType is USE_GEMINI', async () => {
-      const settings = {
-        merged: {
-          security: {
-            auth: {},
-          },
-        },
-      } as LoadedSettings;
-
-      const error = await validateAuthMethodWithSettings(
-        AuthType.USE_GEMINI,
-        settings,
-      );
-      expect(error).toBeNull();
-    });
-
-    it('should call validateAuthMethod for other auth types', async () => {
+    it('should call validateAuthMethod for provider accounts', async () => {
       const settings = {
         merged: {
           security: {
@@ -108,12 +76,12 @@ describe('useAuth', () => {
 
       mockValidateAuthMethod.mockResolvedValue('Validation Error');
       const error = await validateAuthMethodWithSettings(
-        AuthType.LOGIN_WITH_GOOGLE,
+        AuthType.PROVIDER_ACCOUNT,
         settings,
       );
       expect(error).toBe('Validation Error');
       expect(mockValidateAuthMethod).toHaveBeenCalledWith(
-        AuthType.LOGIN_WITH_GOOGLE,
+        AuthType.PROVIDER_ACCOUNT,
       );
     });
   });
@@ -150,9 +118,8 @@ describe('useAuth', () => {
 
     it('should initialize with Unauthenticated state', async () => {
       const { result } = await renderHook(() =>
-        useAuthCommand(createSettings(AuthType.LOGIN_WITH_GOOGLE), mockConfig),
+        useAuthCommand(createSettings(AuthType.PROVIDER_ACCOUNT), mockConfig),
       );
-      // Because we defer refreshAuth, the initial state is safely caught here
       expect(result.current.authState).toBe(AuthState.Unauthenticated);
 
       await act(async () => {
@@ -162,133 +129,43 @@ describe('useAuth', () => {
       expect(result.current.authState).toBe(AuthState.Authenticated);
     });
 
-    it('should set error if no auth type is selected and no env key', async () => {
+    it('should set error if no auth type is selected', async () => {
       const { result } = await renderHook(() =>
         useAuthCommand(createSettings(undefined), mockConfig),
       );
 
-      // This happens synchronously, no deferred promise
       expect(result.current.authError).toBe(
-        'No authentication method selected.',
+        'Select a provider account in /auth.',
       );
       expect(result.current.authState).toBe(AuthState.Updating);
     });
 
-    it('should set error if no auth type is selected but env key exists', async () => {
-      process.env['GEMINI_API_KEY'] = 'env-key';
+    it('should reject removed authentication methods', async () => {
       const { result } = await renderHook(() =>
-        useAuthCommand(createSettings(undefined), mockConfig),
+        useAuthCommand(createSettings(AuthType.USE_GEMINI), mockConfig),
       );
 
-      expect(result.current.authError).toContain(
-        'Existing API key detected (GEMINI_API_KEY)',
+      expect(result.current.authError).toBe(
+        'Only provider accounts are supported. Select a provider account in /auth.',
       );
       expect(result.current.authState).toBe(AuthState.Updating);
-    });
-
-    it('should transition to AwaitingApiKeyInput if USE_GEMINI and no key found', async () => {
-      let deferredLoadKey: { resolve: (k: string | null) => void };
-      mockLoadApiKey.mockImplementation(
-        () =>
-          new Promise((resolve) => {
-            deferredLoadKey = { resolve };
-          }),
-      );
-
-      const { result } = await renderHook(() =>
-        useAuthCommand(createSettings(AuthType.USE_GEMINI), mockConfig),
-      );
-
-      await act(async () => {
-        deferredLoadKey.resolve(null);
-      });
-
-      expect(result.current.authState).toBe(AuthState.AwaitingApiKeyInput);
-    });
-
-    it('should authenticate if USE_GEMINI and key is found', async () => {
-      let deferredLoadKey: { resolve: (k: string | null) => void };
-      mockLoadApiKey.mockImplementation(
-        () =>
-          new Promise((resolve) => {
-            deferredLoadKey = { resolve };
-          }),
-      );
-
-      const { result } = await renderHook(() =>
-        useAuthCommand(createSettings(AuthType.USE_GEMINI), mockConfig),
-      );
-
-      await act(async () => {
-        deferredLoadKey.resolve('stored-key');
-      });
-
-      await act(async () => {
-        deferredRefreshAuth.resolve();
-      });
-
-      expect(mockConfig.refreshAuth).toHaveBeenCalledWith(AuthType.USE_GEMINI);
-      expect(result.current.authState).toBe(AuthState.Authenticated);
-      expect(result.current.apiKeyDefaultValue).toBe('stored-key');
-    });
-
-    it('should authenticate if USE_GEMINI and env key is found', async () => {
-      process.env['GEMINI_API_KEY'] = 'env-key';
-
-      const { result } = await renderHook(() =>
-        useAuthCommand(createSettings(AuthType.USE_GEMINI), mockConfig),
-      );
-
-      await act(async () => {
-        deferredRefreshAuth.resolve();
-      });
-
-      expect(mockConfig.refreshAuth).toHaveBeenCalledWith(AuthType.USE_GEMINI);
-      expect(result.current.authState).toBe(AuthState.Authenticated);
-      expect(result.current.apiKeyDefaultValue).toBe('env-key');
-    });
-
-    it('should prioritize env key over stored key when both are present', async () => {
-      process.env['GEMINI_API_KEY'] = 'env-key';
-
-      const { result } = await renderHook(() =>
-        useAuthCommand(createSettings(AuthType.USE_GEMINI), mockConfig),
-      );
-
-      await act(async () => {
-        deferredRefreshAuth.resolve();
-      });
-
-      expect(mockConfig.refreshAuth).toHaveBeenCalledWith(AuthType.USE_GEMINI);
-      expect(result.current.authState).toBe(AuthState.Authenticated);
-      expect(result.current.apiKeyDefaultValue).toBe('env-key');
+      expect(mockConfig.refreshAuth).not.toHaveBeenCalled();
     });
 
     it('should set error if validation fails', async () => {
       mockValidateAuthMethod.mockResolvedValue('Validation Failed');
       const { result } = await renderHook(() =>
-        useAuthCommand(createSettings(AuthType.LOGIN_WITH_GOOGLE), mockConfig),
+        useAuthCommand(createSettings(AuthType.PROVIDER_ACCOUNT), mockConfig),
       );
 
       expect(result.current.authError).toBe('Validation Failed');
       expect(result.current.authState).toBe(AuthState.Updating);
     });
 
-    it('should set error if GEMINI_DEFAULT_AUTH_TYPE is invalid', async () => {
-      process.env['GEMINI_DEFAULT_AUTH_TYPE'] = 'INVALID_TYPE';
+    it('should authenticate successfully for a provider account', async () => {
+      mockValidateAuthMethod.mockResolvedValue(null);
       const { result } = await renderHook(() =>
-        useAuthCommand(createSettings(AuthType.LOGIN_WITH_GOOGLE), mockConfig),
-      );
-
-      expect(result.current.authError).toContain(
-        'Invalid value for GEMINI_DEFAULT_AUTH_TYPE',
-      );
-      expect(result.current.authState).toBe(AuthState.Updating);
-    });
-
-    it('should authenticate successfully for valid auth type', async () => {
-      const { result } = await renderHook(() =>
-        useAuthCommand(createSettings(AuthType.LOGIN_WITH_GOOGLE), mockConfig),
+        useAuthCommand(createSettings(AuthType.PROVIDER_ACCOUNT), mockConfig),
       );
 
       await act(async () => {
@@ -296,15 +173,16 @@ describe('useAuth', () => {
       });
 
       expect(mockConfig.refreshAuth).toHaveBeenCalledWith(
-        AuthType.LOGIN_WITH_GOOGLE,
+        AuthType.PROVIDER_ACCOUNT,
       );
       expect(result.current.authState).toBe(AuthState.Authenticated);
       expect(result.current.authError).toBeNull();
     });
 
     it('should handle refreshAuth failure', async () => {
+      mockValidateAuthMethod.mockResolvedValue(null);
       const { result } = await renderHook(() =>
-        useAuthCommand(createSettings(AuthType.LOGIN_WITH_GOOGLE), mockConfig),
+        useAuthCommand(createSettings(AuthType.PROVIDER_ACCOUNT), mockConfig),
       );
 
       await act(async () => {
@@ -315,29 +193,13 @@ describe('useAuth', () => {
       expect(result.current.authState).toBe(AuthState.Updating);
     });
 
-    it('should handle ProjectIdRequiredError without "Failed to login" prefix', async () => {
-      const projectIdError = new ProjectIdRequiredError();
-      const { result } = await renderHook(() =>
-        useAuthCommand(createSettings(AuthType.LOGIN_WITH_GOOGLE), mockConfig),
-      );
-
-      await act(async () => {
-        deferredRefreshAuth.reject(projectIdError);
-      });
-
-      expect(result.current.authError).toBe(
-        'This account requires setting the GOOGLE_CLOUD_PROJECT or GOOGLE_CLOUD_PROJECT_ID env var. See https://geminicli.com/docs/get-started/authentication/#set-gcp',
-      );
-      expect(result.current.authError).not.toContain('Failed to login');
-      expect(result.current.authState).toBe(AuthState.Updating);
-    });
-
-    it('should transition to Updating without setting authError on ChangeAuthRequestedError or ValidationCancelledError', async () => {
+    it('should transition to Updating without setting authError on ChangeAuthRequestedError', async () => {
+      mockValidateAuthMethod.mockResolvedValue(null);
       const { ChangeAuthRequestedError } = await import(
         '@google/gemini-cli-core'
       );
       const { result } = await renderHook(() =>
-        useAuthCommand(createSettings(AuthType.LOGIN_WITH_GOOGLE), mockConfig),
+        useAuthCommand(createSettings(AuthType.PROVIDER_ACCOUNT), mockConfig),
       );
 
       await act(async () => {

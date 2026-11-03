@@ -8,7 +8,6 @@ import {
   debugLogger,
   OutputFormat,
   ExitCodes,
-  getAuthTypeFromEnv,
   type Config,
   type AuthType,
 } from '@google/gemini-cli-core';
@@ -24,7 +23,7 @@ export async function validateNonInteractiveAuth(
   settings: LoadedSettings,
 ) {
   try {
-    const effectiveAuthType = configuredAuthType || getAuthTypeFromEnv();
+    const effectiveAuthType = configuredAuthType;
 
     const enforcedType = settings.merged.security.auth.enforcedType;
     if (enforcedType && effectiveAuthType !== enforcedType) {
@@ -35,7 +34,7 @@ export async function validateNonInteractiveAuth(
     }
 
     if (!effectiveAuthType) {
-      const message = `Please set an Auth method in your ${USER_SETTINGS_PATH} or specify one of the following environment variables before running: GEMINI_API_KEY, GOOGLE_GENAI_USE_VERTEXAI, GOOGLE_GENAI_USE_GCA`;
+      const message = `Please select a provider account in /auth before running non-interactively. Settings file: ${USER_SETTINGS_PATH}`;
       throw new Error(message);
     }
 

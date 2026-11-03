@@ -33,6 +33,13 @@ vi.mock('./apiKeyCredentialStorage.js', () => ({
 
 vi.mock('./fakeContentGenerator.js');
 
+const mockGetActiveAccount = vi.hoisted(() => vi.fn());
+
+vi.mock('../providers/accounts.js', () => ({
+  getActiveAccount: () => mockGetActiveAccount(),
+  loadActiveAccountCredentials: vi.fn(),
+}));
+
 const mockConfig = {
   getModel: vi.fn().mockReturnValue('gemini-pro'),
   getProxy: vi.fn().mockReturnValue(undefined),
@@ -50,39 +57,32 @@ const mockConfig = {
 
 describe('getAuthTypeFromEnv', () => {
   beforeEach(() => {
-    vi.stubEnv('GEMINI_API_KEY', '');
+    mockGetActiveAccount.mockReturnValue(undefined);
   });
 
   afterEach(() => {
     vi.unstubAllEnvs();
+    mockGetActiveAccount.mockReset();
   });
 
-  it('should detect LOGIN_WITH_GOOGLE when GOOGLE_GENAI_USE_GCA is true', () => {
-    vi.stubEnv('GOOGLE_GENAI_USE_GCA', 'true');
-    expect(getAuthTypeFromEnv()).toBe(AuthType.LOGIN_WITH_GOOGLE);
+  it('should return PROVIDER_ACCOUNT when a saved account exists', () => {
+    mockGetActiveAccount.mockReturnValue({ id: 'account-id' });
+    expect(getAuthTypeFromEnv()).toBe(AuthType.PROVIDER_ACCOUNT);
   });
 
-  it('should detect USE_VERTEX_AI when GOOGLE_GENAI_USE_VERTEXAI is true', () => {
-    vi.stubEnv('GOOGLE_GENAI_USE_VERTEXAI', 'true');
-    expect(getAuthTypeFromEnv()).toBe(AuthType.USE_VERTEX_AI);
+  it.each([
+    ['GOOGLE_GENAI_USE_GCA', 'true'],
+    ['GOOGLE_GENAI_USE_VERTEXAI', 'true'],
+    ['GOOGLE_GEMINI_BASE_URL', 'https://gateway.example.com'],
+    ['GEMINI_API_KEY', 'fake-key'],
+    ['CLOUD_SHELL', 'true'],
+    ['GEMINI_CLI_USE_COMPUTE_ADC', 'true'],
+  ])('should ignore legacy environment variable %s', (name, value) => {
+    vi.stubEnv(name, value);
+    expect(getAuthTypeFromEnv()).toBeUndefined();
   });
 
-  it('should detect GATEWAY when GOOGLE_GEMINI_BASE_URL is present', () => {
-    vi.stubEnv('GOOGLE_GEMINI_BASE_URL', 'https://gateway.example.com');
-    expect(getAuthTypeFromEnv()).toBe(AuthType.GATEWAY);
-  });
-
-  it('should detect USE_GEMINI when GEMINI_API_KEY is present', () => {
-    vi.stubEnv('GEMINI_API_KEY', 'fake-key');
-    expect(getAuthTypeFromEnv()).toBe(AuthType.USE_GEMINI);
-  });
-
-  it('should detect COMPUTE_ADC when CLOUD_SHELL is true', () => {
-    vi.stubEnv('CLOUD_SHELL', 'true');
-    expect(getAuthTypeFromEnv()).toBe(AuthType.COMPUTE_ADC);
-  });
-
-  it('should return undefined when no matching env variables are set', () => {
+  it('should return undefined when no provider account is saved', () => {
     expect(getAuthTypeFromEnv()).toBeUndefined();
   });
 });
