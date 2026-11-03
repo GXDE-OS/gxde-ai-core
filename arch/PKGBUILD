@@ -1,6 +1,6 @@
 # Maintainer: CharOfString <root@charofstring.cc>
 
-pkgname=gxde-ai-core
+pkgname=gxde-ai-core-git
 pkgver=0.0.1
 pkgrel=1
 pkgdesc='GXDE AI backend based on Google Gemini CLI & CharOfString Hachimi CLI'
