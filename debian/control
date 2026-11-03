@@ -1,0 +1,18 @@
+Source: gxde-ai-core
+Section: utils
+Priority: optional
+Maintainer: CharOfString <root@charofstring.cc>
+Build-Depends: debhelper-compat (= 13),
+               nodejs (>= 20),
+               npm,
+               ca-certificates,
+               git
+Standards-Version: 4.6.2
+Rules-Requires-Root: no
+Homepage: https://github.com/CharOfString/hachimi
+
+Package: gxde-ai-core
+Architecture: any
+Depends: ${shlibs:Depends}, ${misc:Depends}
+Recommends: git, libsecret-1-0
+Description: GXDE's core AI backend based on Google's Gemini CLI and CharOfString's Hachimi CLI.

@@ -328,3 +328,7 @@ export * from './voice/whisperTranscriptionProvider.js';
 export * from './voice/transcriptionFactory.js';
 export * from './voice/whisperModelManager.js';
 export { isBinaryAvailable } from './utils/binaryCheck.js';
+export {
+  isBinaryMode,
+  resolveBundledResourcePath,
+} from './utils/bundledResources.js';

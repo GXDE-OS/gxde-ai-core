@@ -8,7 +8,10 @@ import { access, cp, mkdir, readdir, writeFile } from 'node:fs/promises';
 import { join, dirname, basename } from 'node:path';
 import type { CommandModule } from 'yargs';
 import { fileURLToPath } from 'node:url';
-import { debugLogger } from '@google/gemini-cli-core';
+import {
+  debugLogger,
+  resolveBundledResourcePath,
+} from '@google/gemini-cli-core';
 import { exitCli } from '../utils.js';
 
 interface NewArgs {
@@ -19,7 +22,10 @@ interface NewArgs {
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = dirname(__filename);
 
-const EXAMPLES_PATH = join(__dirname, 'examples');
+const EXAMPLES_PATH = resolveBundledResourcePath(
+  'examples',
+  join(__dirname, 'examples'),
+);
 
 async function pathExists(path: string) {
   try {

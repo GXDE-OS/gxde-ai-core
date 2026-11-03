@@ -170,6 +170,9 @@ function signFile(filePath) {
 
 console.log('Build Binary Script Started...');
 
+const skipInstall = process.argv.includes('--skip-install');
+const skipBundle = process.argv.includes('--skip-bundle');
+
 // 1. Clean dist
 if (existsSync(distDir)) {
   console.log('Cleaning dist directory...');
@@ -180,9 +183,13 @@ mkdirSync(distDir, { recursive: true });
 // 2. Build Bundle
 console.log('Running npm clean, install, and bundle...');
 try {
-  runCommand('npm', ['run', 'clean']);
-  runCommand('npm', ['install']);
-  runCommand('npm', ['run', 'bundle']);
+  if (!skipInstall) {
+    runCommand('npm', ['run', 'clean']);
+    runCommand('npm', ['install']);
+  }
+  if (!skipBundle) {
+    runCommand('npm', ['run', 'bundle']);
+  }
 } catch (e) {
   console.error('Build step failed:', e.message);
   process.exit(1);

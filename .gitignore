@@ -34,6 +34,9 @@ Thumbs.db
 # Ignore built ts files
 dist
 
+# Debian packaging staging
+build/deb
+
 # Docker folder to help skip auth refreshes
 .docker
 

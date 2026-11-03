@@ -100,6 +100,27 @@ describe('sea-launch', () => {
       exitSpy.mockRestore();
       consoleSpy.mockRestore();
     });
+
+    it('runs the bundled MCP sidecar mode and reports a missing script', async () => {
+      process.env['GXDE_AI_CORE_RUN_BUNDLED_MCP'] = '1';
+      const exitSpy = vi.spyOn(process, 'exit').mockImplementation(() => {});
+      const consoleSpy = vi
+        .spyOn(globalThis.console, 'error')
+        .mockImplementation(() => {});
+
+      await main();
+
+      expect(consoleSpy).toHaveBeenCalledWith(
+        'Fatal Error: Failed to launch bundled MCP.',
+        expect.anything(),
+      );
+      expect(exitSpy).toHaveBeenCalledWith(1);
+      expect(process.env['GXDE_AI_CORE_RUN_BUNDLED_MCP']).toBeUndefined();
+
+      delete process.env['GXDE_AI_CORE_RUN_BUNDLED_MCP'];
+      exitSpy.mockRestore();
+      consoleSpy.mockRestore();
+    });
   });
 
   describe('sanitizeArgv', () => {

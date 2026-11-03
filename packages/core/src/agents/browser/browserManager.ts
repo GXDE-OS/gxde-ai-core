@@ -18,9 +18,13 @@
  */
 
 import { Client } from '@modelcontextprotocol/sdk/client/index.js';
-import { StdioClientTransport } from '@modelcontextprotocol/sdk/client/stdio.js';
+import {
+  StdioClientTransport,
+  getDefaultEnvironment,
+} from '@modelcontextprotocol/sdk/client/stdio.js';
 import type { Tool as McpTool } from '@modelcontextprotocol/sdk/types.js';
 import { debugLogger } from '../../utils/debugLogger.js';
+import { getBundledResourceRoot } from '../../utils/bundledResources.js';
 import { coreEvents } from '../../utils/events.js';
 import type { Config } from '../../config/config.js';
 import { Storage } from '../../config/storage.js';
@@ -694,11 +698,19 @@ export class BrowserManager {
     // Create stdio transport to the bundled chrome-devtools-mcp.
     // stderr is piped (not inherited) to prevent MCP server banners and
     // warnings from corrupting the UI in alternate buffer mode.
+    const isBinary = process.env['IS_BINARY'] === 'true';
+    const bundledMcpPath = path.join(
+      getBundledResourceRoot(),
+      'bundled',
+      'chrome-devtools-mcp.mjs',
+    );
     let bundleMcpPath = path.resolve(
       __dirname,
       'bundled/chrome-devtools-mcp.mjs',
     );
-    if (!fs.existsSync(bundleMcpPath)) {
+    if (isBinary && fs.existsSync(bundledMcpPath)) {
+      bundleMcpPath = bundledMcpPath;
+    } else if (!fs.existsSync(bundleMcpPath)) {
       bundleMcpPath = path.resolve(
         __dirname,
         __dirname.includes(`${path.sep}dist${path.sep}`)
@@ -707,9 +719,22 @@ export class BrowserManager {
       );
     }
 
+    if (isBinary && !fs.existsSync(bundledMcpPath)) {
+      throw new Error(
+        `Bundled chrome-devtools-mcp not found at ${bundledMcpPath}. ` +
+          'Reinstall gxde-ai-core with its bundled resources.',
+      );
+    }
+
     this.mcpTransport = new StdioClientTransport({
-      command: 'node',
-      args: [bundleMcpPath, ...mcpArgs],
+      command: isBinary ? process.execPath : 'node',
+      args: isBinary ? mcpArgs : [bundleMcpPath, ...mcpArgs],
+      env: isBinary
+        ? {
+            ...getDefaultEnvironment(),
+            GXDE_AI_CORE_RUN_BUNDLED_MCP: '1',
+          }
+        : undefined,
       stderr: 'pipe',
     });
 

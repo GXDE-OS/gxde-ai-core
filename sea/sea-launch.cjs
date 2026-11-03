@@ -227,6 +227,25 @@ function prepareRuntime(manifest, getAssetFn, deps = {}) {
 async function main(getAssetFn = getAsset) {
   process.env.IS_BINARY = 'true';
 
+  // Add sidecared resources to S.E.A bundle.
+  if (process.env['GXDE_AI_CORE_RUN_BUNDLED_MCP'] === '1') {
+    let execDir = path.dirname(process.execPath);
+    try {
+      execDir = path.dirname(fs.realpathSync(process.execPath));
+    } catch {
+      // Do nothing here.
+    }
+    const mcpPath = path.join(execDir, 'bundled', 'chrome-devtools-mcp.mjs');
+    sanitizeArgv(process.argv, process.execPath);
+    process.argv = [process.execPath, mcpPath, ...process.argv.slice(1)];
+    delete process.env['GXDE_AI_CORE_RUN_BUNDLED_MCP'];
+    await import(pathToFileURL(mcpPath).href).catch((err) => {
+      console.error('Fatal Error: Failed to launch bundled MCP.', err);
+      process.exit(1);
+    });
+    return;
+  }
+
   if (nodeModule.enableCompileCache) {
     nodeModule.enableCompileCache();
   }

@@ -51,6 +51,7 @@ const TOOL_CATEGORIES: Record<
   exit_plan_mode: 'planning',
   write_todos: 'planning',
   ask_user: 'user-interaction',
+  get_identity: 'user-interaction',
   activate_skill: 'skills',
   get_internal_docs: 'skills',
   tracker_create_task: 'task-tracker',

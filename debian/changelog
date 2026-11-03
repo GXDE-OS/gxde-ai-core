@@ -1,0 +1,5 @@
+gxde-ai-core (0.0.1) unstable; urgency=medium
+
+  * Initial Debian package.
+
+ -- CharOfString <root@charofstring.cc>  Tue, 03 Nov 2026 00:00:00 +0000

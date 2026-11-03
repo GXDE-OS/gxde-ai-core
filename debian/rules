@@ -1,0 +1,38 @@
+#!/usr/bin/make -f
+
+NODE := $(shell command -v node || command -v nodejs)
+NODE_ARCH := $(shell $(NODE) -p "process.arch")
+
+%:
+	dh $@
+
+override_dh_auto_configure:
+	@test "$$(dpkg-parsechangelog -SVersion)" = "$$($(NODE) -p "require('./package.json').version")" || \
+		(echo "debian/changelog version must match package.json" >&2; exit 1)
+
+override_dh_auto_build:
+	HUSKY=0 npm ci
+	$(NODE) scripts/build_binary.js --skip-install --skip-bundle
+
+override_dh_auto_test:
+	# The upstream test suite is not run during package builds.
+
+override_dh_auto_install:
+	install -d debian/gxde-ai-core/usr/lib/gxde-ai-core
+	cp -a dist/linux-$(NODE_ARCH)/. debian/gxde-ai-core/usr/lib/gxde-ai-core/
+	chmod 0755 debian/gxde-ai-core/usr/lib/gxde-ai-core/gxde-ai-core
+
+override_dh_install:
+	# Installed in override_dh_auto_install.
+
+override_dh_auto_clean:
+	rm -rf dist bundle node_modules build
+	rm -rf packages/vscode-ide-companion/node_modules
+	rm -rf packages/cli/src/generated packages/core/src/generated
+	dh_clean
+
+override_dh_strip:
+	# Node.js SEA binaries must not be stripped.
+
+override_dh_dwz:
+	# Node.js SEA binaries do not contain DWARF debug information.

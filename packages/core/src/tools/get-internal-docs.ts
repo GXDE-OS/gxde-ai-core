@@ -22,6 +22,10 @@ import { glob } from 'glob';
 import { ToolErrorType } from './tool-error.js';
 import { GET_INTERNAL_DOCS_DEFINITION } from './definitions/coreTools.js';
 import { resolveToolDeclaration } from './definitions/resolver.js';
+import {
+  getBundledResourceRoot,
+  isBinaryMode,
+} from '../utils/bundledResources.js';
 
 /**
  * Parameters for the GetInternalDocs tool.
@@ -54,6 +58,13 @@ async function getDocsRoot(): Promise<string> {
     }
     return false;
   };
+
+  if (isBinaryMode()) {
+    const bundledDocs = path.join(getBundledResourceRoot(), 'docs');
+    if (await isDocsDir(bundledDocs)) {
+      return bundledDocs;
+    }
+  }
 
   while (true) {
     const candidate = path.join(searchDir, 'docs');

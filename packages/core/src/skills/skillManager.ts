@@ -10,6 +10,7 @@ import { Storage } from '../config/storage.js';
 import { type SkillDefinition, loadSkillsFromDir } from './skillLoader.js';
 import type { GeminiCLIExtension } from '../config/config.js';
 import { debugLogger } from '../utils/debugLogger.js';
+import { resolveBundledResourcePath } from '../utils/bundledResources.js';
 import { coreEvents } from '../utils/events.js';
 
 export { type SkillDefinition };
@@ -103,7 +104,10 @@ export class SkillManager {
    */
   private async discoverBuiltinSkills(): Promise<void> {
     const __dirname = path.dirname(fileURLToPath(import.meta.url));
-    const builtinDir = path.join(__dirname, 'builtin');
+    const builtinDir = resolveBundledResourcePath(
+      'builtin',
+      path.join(__dirname, 'builtin'),
+    );
 
     const builtinSkills = await loadSkillsFromDir(builtinDir);
 

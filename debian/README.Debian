@@ -1,0 +1,13 @@
+gxde-ai-core for Debian
+========================
+
+This package builds a Node.js Single Executable Application (SEA). The
+`dpkg-buildpackage` run executes `npm ci` and therefore needs access to the npm
+registry, or a pre-populated npm cache. Node.js 20 or newer is required.
+
+The standalone binary and its sidecars are installed under
+`/usr/lib/gxde-ai-core` and exposed through `/usr/bin/gxde-ai-core` and
+`/usr/bin/hachimi`.
+
+The upstream test suite is not run during the package build. Use
+`npm run test` in the source tree if you need to validate a build manually.
