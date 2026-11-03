@@ -1,0 +1,71 @@
+# Maintainer: CharOfString <root@charofstring.cc>
+
+pkgname=gxde-ai-core
+pkgver=0.0.1
+pkgrel=1
+pkgdesc='GXDE AI backend based on Google Gemini CLI & CharOfString Hachimi CLI'
+arch=('x86_64' 'aarch64')
+url='https://github.com/CharOfString/hachimi'
+license=('Apache-2.0')
+depends=('glibc' 'gcc-libs' 'libsecret')
+optdepends=('git: Git integration and checkpointing')
+makedepends=('git' 'curl')
+options=('!strip' '!debug')
+
+_nodever=20.19.0
+
+source_x86_64=("node-v${_nodever}-linux-x64.tar.xz::https://nodejs.org/dist/v${_nodever}/node-v${_nodever}-linux-x64.tar.xz")
+sha256sums_x86_64=('b4e336584d62abefad31baecff7af167268be9bb7dd11f1297112e6eed3ca0d5')
+
+source_aarch64=("node-v${_nodever}-linux-arm64.tar.xz::https://nodejs.org/dist/v${_nodever}/node-v${_nodever}-linux-arm64.tar.xz")
+sha256sums_aarch64=('dbe339e55eb393955a213e6b872066880bb9feceaa494f4d44c7aac205ec2ab9')
+
+case "$CARCH" in
+  x86_64)
+    _nodearch=x64
+    ;;
+  aarch64)
+    _nodearch=arm64
+    ;;
+  *)
+    error "Unsupported architecture: $CARCH"
+    ;;
+esac
+
+build() {
+  rm -rf "$srcdir/$pkgname-$pkgver"
+  mkdir -p "$srcdir/$pkgname-$pkgver"
+  tar -C "$startdir/.." \
+    --exclude='./.git' \
+    --exclude='./node_modules' \
+    --exclude='./dist' \
+    --exclude='./bundle' \
+    --exclude='./build' \
+    --exclude='./packages/*/dist' \
+    --exclude='./packages/*/node_modules' \
+    --exclude='./arch/src' \
+    --exclude='./arch/pkg' \
+    --exclude='./arch/*.pkg.tar.*' \
+    --exclude='./arch/node-v*-linux-*.tar.xz' \
+    -cf - . | tar -C "$srcdir/$pkgname-$pkgver" -xf -
+
+  cd "$srcdir/$pkgname-$pkgver"
+  export PATH="$srcdir/node-v${_nodever}-linux-${_nodearch}/bin:$PATH"
+  HUSKY=0 npm ci
+  node scripts/build_binary.js --skip-install --skip-bundle
+}
+
+package() {
+  cd "$srcdir/$pkgname-$pkgver"
+
+  install -d "$pkgdir/usr/lib/gxde-ai-core"
+  cp -a "dist/linux-${_nodearch}/." "$pkgdir/usr/lib/gxde-ai-core/"
+  chmod 0755 "$pkgdir/usr/lib/gxde-ai-core/gxde-ai-core"
+
+  install -d "$pkgdir/usr/bin"
+  ln -s ../lib/gxde-ai-core/gxde-ai-core "$pkgdir/usr/bin/gxde-ai-core"
+  ln -s gxde-ai-core "$pkgdir/usr/bin/hachimi"
+
+  install -Dm644 LICENSE "$pkgdir/usr/share/licenses/$pkgname/LICENSE"
+  install -Dm644 NOTICE "$pkgdir/usr/share/licenses/$pkgname/NOTICE"
+}

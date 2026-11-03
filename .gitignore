@@ -37,6 +37,12 @@ dist
 # Debian packaging staging
 build/deb
 
+# Arch package build artifacts
+arch/src/
+arch/pkg/
+arch/*.pkg.tar.*
+arch/node-v*-linux-*.tar.xz
+
 # Docker folder to help skip auth refreshes
 .docker
 
