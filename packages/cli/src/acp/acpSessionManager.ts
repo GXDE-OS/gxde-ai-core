@@ -65,7 +65,7 @@ export class AcpSessionManager {
 
   async newSession(
     { cwd, mcpServers }: acp.NewSessionRequest,
-    authDetails: AuthDetails,
+    _authDetails: AuthDetails,
   ): Promise<acp.NewSessionResponse> {
     const sessionId = randomUUID();
     const loadedSettings = loadSettings(cwd);
@@ -76,32 +76,13 @@ export class AcpSessionManager {
       loadedSettings,
     );
 
-    const authType =
-      loadedSettings.merged.security.auth.selectedType ||
-      (authDetails.baseUrl || process.env['GOOGLE_GEMINI_BASE_URL']
-        ? AuthType.GATEWAY
-        : AuthType.USE_GEMINI);
+    const authType = AuthType.PROVIDER_ACCOUNT;
 
     let isAuthenticated = false;
     let authErrorMessage = '';
     try {
-      await config.refreshAuth(
-        authType,
-        authDetails.apiKey,
-        authDetails.baseUrl,
-        authDetails.customHeaders,
-      );
+      await config.refreshAuth(authType);
       isAuthenticated = true;
-
-      // Extra validation for Gemini API key
-      const contentGeneratorConfig = config.getContentGeneratorConfig();
-      if (
-        authType === AuthType.USE_GEMINI &&
-        (!contentGeneratorConfig || !contentGeneratorConfig.apiKey)
-      ) {
-        isAuthenticated = false;
-        authErrorMessage = 'Gemini API key is missing or not configured.';
-      }
     } catch (e) {
       isAuthenticated = false;
       authErrorMessage = getAcpErrorMessage(e);
@@ -203,7 +184,7 @@ export class AcpSessionManager {
 
   async loadSession(
     { sessionId, cwd, mcpServers }: acp.LoadSessionRequest,
-    authDetails: AuthDetails,
+    _authDetails: AuthDetails,
   ): Promise<acp.LoadSessionResponse> {
     if (!/^[a-zA-Z0-9-_]+$/.test(sessionId)) {
       throw new acp.RequestError(-32602, 'Invalid session identifier format.');
@@ -238,7 +219,7 @@ export class AcpSessionManager {
         sessionId,
         cwd,
         mcpServers,
-        authDetails,
+        _authDetails,
       );
 
       await config.initialize();
@@ -317,18 +298,8 @@ export class AcpSessionManager {
     sessionId: string,
     cwd: string,
     mcpServers: acp.McpServer[],
-    authDetails: AuthDetails,
+    _authDetails: AuthDetails,
   ): Promise<Config> {
-    const selectedAuthType =
-      this.settings.merged.security.auth.selectedType ||
-      (authDetails.baseUrl || process.env['GOOGLE_GEMINI_BASE_URL']
-        ? AuthType.GATEWAY
-        : undefined);
-
-    if (!selectedAuthType) {
-      throw acp.RequestError.authRequired();
-    }
-
     // 1. Create config WITHOUT initializing it (no MCP servers started yet)
     const config = await this.newSessionConfig(sessionId, cwd, mcpServers);
 
@@ -336,12 +307,7 @@ export class AcpSessionManager {
     // This satisfies the security requirement to verify the user before executing
     // potentially unsafe server definitions.
     try {
-      await config.refreshAuth(
-        selectedAuthType,
-        authDetails.apiKey,
-        authDetails.baseUrl,
-        authDetails.customHeaders,
-      );
+      await config.refreshAuth(AuthType.PROVIDER_ACCOUNT);
     } catch (e) {
       debugLogger.error(`Authentication failed: ${e}`);
       try {

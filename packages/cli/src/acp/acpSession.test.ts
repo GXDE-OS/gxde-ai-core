@@ -30,6 +30,8 @@ import {
   MessageBusType,
   type ToolConfirmationRequest,
   DiscoveredMCPTool,
+  AuthType,
+  type ProviderAccount,
 } from '@google/gemini-cli-core';
 import type { LoadedSettings } from '../config/settings.js';
 import { type Part, FinishReason } from '@google/genai';
@@ -140,6 +142,11 @@ describe('Session', () => {
       getMessageBus: vi.fn().mockReturnValue(mockMessageBus),
       setApprovalMode: vi.fn(),
       setModel: vi.fn(),
+      refreshAuth: vi.fn(),
+      getContentGeneratorConfig: vi.fn().mockReturnValue(undefined),
+      getGeminiClient: vi.fn().mockReturnValue({
+        stripThoughtsFromHistory: vi.fn(),
+      }),
       isPlanEnabled: vi.fn().mockReturnValue(true),
       getCheckpointingEnabled: vi.fn().mockReturnValue(false),
       getGitService: vi.fn().mockResolvedValue({} as GitService),
@@ -1475,6 +1482,87 @@ describe('Session', () => {
           confirmed: false,
           requiresUserConfirmation: false,
         }),
+      );
+    });
+  });
+
+  describe('setProvider', () => {
+    const account: ProviderAccount = {
+      id: '11111111-1111-4111-8111-111111111111',
+      name: 'Test DeepSeek',
+      providerId: 'deepseek',
+      protocol: 'openai',
+      baseUrl: 'https://api.deepseek.com',
+      models: [{ id: 'deepseek-chat' }, { id: 'deepseek-reasoner' }],
+      model: 'deepseek-chat',
+    };
+
+    it('refreshes auth with the explicit account and preserves the session', async () => {
+      const previousAccount: ProviderAccount = {
+        id: '22222222-2222-4222-8222-222222222222',
+        name: 'Previous',
+        providerId: 'qwen',
+        protocol: 'openai',
+        baseUrl: 'https://example.com/v1',
+        models: [{ id: 'qwen3-max' }],
+        model: 'qwen3-max',
+      };
+      mockConfig.getContentGeneratorConfig.mockReturnValue({
+        authType: AuthType.PROVIDER_ACCOUNT,
+        providerAccount: previousAccount,
+        apiKey: 'previous-key',
+      });
+
+      await session.setProvider(account, 'new-key', 'deepseek-reasoner');
+
+      expect(mockConfig.setModel).toHaveBeenCalledWith(
+        'deepseek-reasoner',
+        true,
+      );
+      expect(mockConfig.refreshAuth).toHaveBeenCalledWith(
+        AuthType.PROVIDER_ACCOUNT,
+        undefined,
+        undefined,
+        undefined,
+        account,
+        'new-key',
+      );
+      expect(
+        mockConfig.getGeminiClient().stripThoughtsFromHistory,
+      ).toHaveBeenCalled();
+    });
+
+    it('restores the previous provider when the switch fails', async () => {
+      const previousAccount: ProviderAccount = {
+        id: '33333333-3333-4333-8333-333333333333',
+        name: 'Previous',
+        providerId: 'qwen',
+        protocol: 'openai',
+        baseUrl: 'https://example.com/v1',
+        models: [{ id: 'qwen3-max' }],
+        model: 'qwen3-max',
+      };
+      mockConfig.getContentGeneratorConfig.mockReturnValue({
+        authType: AuthType.PROVIDER_ACCOUNT,
+        providerAccount: previousAccount,
+        apiKey: 'previous-key',
+      });
+      mockConfig.refreshAuth
+        .mockRejectedValueOnce(new Error('switch failed'))
+        .mockResolvedValueOnce(undefined);
+
+      await expect(session.setProvider(account, 'new-key')).rejects.toThrow(
+        'switch failed',
+      );
+
+      expect(mockConfig.setModel).toHaveBeenLastCalledWith('gemini-pro', true);
+      expect(mockConfig.refreshAuth).toHaveBeenLastCalledWith(
+        AuthType.PROVIDER_ACCOUNT,
+        undefined,
+        undefined,
+        undefined,
+        previousAccount,
+        'previous-key',
       );
     });
   });
