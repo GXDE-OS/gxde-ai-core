@@ -1,6 +1,6 @@
 package top.gxde.ai.core;
 
-import static top.gxde.ai.core.Utils.makeJSONObject;
+import static top.gxde.ai.core.Utils.makeJsonObject;
 
 import java.time.Instant;
 import java.util.Map;
@@ -21,7 +21,7 @@ public class ModelHandler {
    * @return A map of models.
    */
   public static Map<String, Object> model(String id) {
-    return makeJSONObject("id", id,
+    return makeJsonObject("id", id,
         "object", "model",
         "created", Instant.now().getEpochSecond(),
         "owned_by", "gxde");
