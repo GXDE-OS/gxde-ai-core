@@ -2,13 +2,7 @@ package top.gxde.ai.core;
 
 import static top.gxde.ai.core.ServerCommons.readRequest;
 import static top.gxde.ai.core.ServerCommons.sendJson;
-import static top.gxde.ai.core.Utils.beginStream;
-import static top.gxde.ai.core.Utils.ensureMap;
-import static top.gxde.ai.core.Utils.makeJsonObject;
-import static top.gxde.ai.core.Utils.segments;
-import static top.gxde.ai.core.Utils.string;
-import static top.gxde.ai.core.Utils.textContent;
-import static top.gxde.ai.core.Utils.writeUtf8;
+import static top.gxde.ai.core.Utils.*;
 
 import com.sun.net.httpserver.HttpExchange;
 import java.io.IOException;
@@ -191,22 +185,6 @@ public class ResponseHandler {
         "created", created, "model", model,
         "choices", List.of(makeJsonObject("index", 0, "delta", delta,
             "logprobs", null, "finish_reason", finishReason))));
-  }
-
-  /**
-   * Writes a server-sent event with an optional event name.
-   *
-   * @param out the response stream.
-   * @param eventName the event name, or {@code null} to omit the {@code event} field.
-   * @param content the value serialized into the {@code data} field.
-   * @throws IOException if writing to the stream fails.
-   */
-  private static void sendSse(OutputStream out, String eventName, Object content)
-      throws IOException {
-    if (eventName != null) {
-      writeUtf8(out, "event: " + eventName + "\n");
-    }
-    writeUtf8(out, "data: " + Json.stringify(content) + "\n\n");
   }
 
   /**

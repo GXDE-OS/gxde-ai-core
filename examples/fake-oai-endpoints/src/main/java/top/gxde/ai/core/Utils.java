@@ -140,4 +140,20 @@ public class Utils {
     }
     return result;
   }
+
+  /**
+   * Writes a server-sent event with an optional event name.
+   *
+   * @param out the response stream.
+   * @param eventName the event name, or {@code null} to omit the {@code event} field.
+   * @param content the value serialized into the {@code data} field.
+   * @throws IOException if writing to the stream fails.
+   */
+  public static void sendSse(OutputStream out, String eventName, Object content)
+    throws IOException {
+    if (eventName != null) {
+      writeUtf8(out, "event: " + eventName + "\n");
+    }
+    writeUtf8(out, "data: " + Json.stringify(content) + "\n\n");
+  }
 }
