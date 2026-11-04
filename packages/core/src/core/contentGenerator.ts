@@ -132,6 +132,8 @@ export async function createContentGeneratorConfig(
   baseUrl?: string,
   customHeaders?: Record<string, string>,
   vertexAiRouting?: VertexAiRoutingConfig,
+  providerAccount?: ProviderAccount,
+  providerApiKey?: string,
 ): Promise<ContentGeneratorConfig> {
   const contentGeneratorConfig: ContentGeneratorConfig = {
     authType,
@@ -159,6 +161,12 @@ export async function createContentGeneratorConfig(
   }
 
   if (authType === AuthType.PROVIDER_ACCOUNT) {
+    if (providerAccount && providerApiKey) {
+      contentGeneratorConfig.providerAccount = providerAccount;
+      contentGeneratorConfig.apiKey = providerApiKey;
+      return contentGeneratorConfig;
+    }
+
     const { account, apiKey: accountKey } =
       await loadActiveAccountCredentials();
     contentGeneratorConfig.providerAccount = account;

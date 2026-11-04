@@ -268,6 +268,17 @@ export function buildAvailableModels(
   const useLatestFlash = config.hasLatestFlashGAAccess?.() ?? false;
   const useLatestFlashLite = config.hasLatestFlashLiteGAAccess?.() ?? false;
   const selectedAuthType = settings.merged.security.auth.selectedType;
+  const providerAccount = config.getContentGeneratorConfig?.()?.providerAccount;
+  if (providerAccount) {
+    return {
+      availableModels: providerAccount.models.map((model) => ({
+        modelId: model.id,
+        name: model.id,
+      })),
+      currentModelId: config.getModel(),
+    };
+  }
+
   const useCustomToolModel =
     useGemini31 && selectedAuthType === AuthType.USE_GEMINI;
 

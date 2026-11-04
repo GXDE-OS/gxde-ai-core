@@ -1537,4 +1537,30 @@ describe('createContentGeneratorConfig', () => {
     expect(config.apiKey).toBe('');
     expect(config.vertexai).toBe(false);
   });
+
+  it('should use an explicit provider account when provided', async () => {
+    const account = {
+      id: '11111111-1111-4111-8111-111111111111',
+      name: 'Test DeepSeek',
+      providerId: 'deepseek',
+      protocol: 'openai' as const,
+      baseUrl: 'https://api.deepseek.com',
+      models: [{ id: 'deepseek-chat' }],
+      model: 'deepseek-chat',
+    };
+
+    const config = await createContentGeneratorConfig(
+      mockConfig,
+      AuthType.PROVIDER_ACCOUNT,
+      undefined,
+      undefined,
+      undefined,
+      undefined,
+      account,
+      'explicit-provider-key',
+    );
+
+    expect(config.providerAccount).toEqual(account);
+    expect(config.apiKey).toBe('explicit-provider-key');
+  });
 });

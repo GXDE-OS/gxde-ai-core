@@ -275,17 +275,10 @@ describe('AcpSessionManager', () => {
     });
   });
 
-  it('should fail session creation if Gemini API key is missing', async () => {
-    (loadSettings as unknown as Mock).mockImplementation(() => ({
-      merged: {
-        security: { auth: { selectedType: AuthType.USE_GEMINI } },
-        mcpServers: {},
-      },
-      setValue: vi.fn(),
-    }));
-    mockConfig.getContentGeneratorConfig = vi.fn().mockReturnValue({
-      apiKey: undefined,
-    });
+  it('should fail session creation if provider authentication fails', async () => {
+    mockConfig.refreshAuth.mockRejectedValue(
+      new Error('Select a provider account with /auth.'),
+    );
 
     await expect(
       manager.newSession(
@@ -296,7 +289,7 @@ describe('AcpSessionManager', () => {
         {},
       ),
     ).rejects.toMatchObject({
-      message: 'Gemini API key is missing or not configured.',
+      message: 'Select a provider account with /auth.',
     });
   });
 

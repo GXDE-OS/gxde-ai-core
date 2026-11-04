@@ -40,6 +40,8 @@ import {
   resolveAtCommandPath,
   type ResolvedAtCommandPath,
   tokenLimit,
+  AuthType,
+  type ProviderAccount,
 } from '@google/gemini-cli-core';
 import * as acp from '@agentclientprotocol/sdk';
 import type { Part, FunctionCall } from '@google/genai';
@@ -244,6 +246,61 @@ export class Session {
   setModel(modelId: acp.ModelId): acp.SetSessionModelResponse {
     this.context.config.setModel(modelId);
     return {};
+  }
+
+  async setProvider(
+    account: ProviderAccount,
+    apiKey: string,
+    model?: string,
+  ): Promise<acp.SetSessionModelResponse> {
+    const previousConfig = this.context.config.getContentGeneratorConfig();
+    const previousModel = this.context.config.getModel();
+    const nextModel = model ?? account.model;
+
+    try {
+      this.context.config.setModel(nextModel, true);
+      await this.context.config.refreshAuth(
+        AuthType.PROVIDER_ACCOUNT,
+        undefined,
+        undefined,
+        undefined,
+        account,
+        apiKey,
+      );
+      // Provider adapters may use incompatible thought signatures.
+      this.context.config.getGeminiClient().stripThoughtsFromHistory();
+      return {};
+    } catch (error) {
+      this.context.config.setModel(previousModel, true);
+      try {
+        if (
+          previousConfig?.authType === AuthType.PROVIDER_ACCOUNT &&
+          previousConfig.providerAccount &&
+          previousConfig.apiKey
+        ) {
+          await this.context.config.refreshAuth(
+            AuthType.PROVIDER_ACCOUNT,
+            undefined,
+            undefined,
+            undefined,
+            previousConfig.providerAccount,
+            previousConfig.apiKey,
+          );
+        } else if (previousConfig?.authType) {
+          await this.context.config.refreshAuth(
+            previousConfig.authType,
+            previousConfig.apiKey,
+            previousConfig.baseUrl,
+            previousConfig.customHeaders,
+          );
+        }
+      } catch (rollbackError) {
+        debugLogger.error(
+          `Failed to restore the previous provider: ${getErrorMessage(rollbackError)}`,
+        );
+      }
+      throw error;
+    }
   }
 
   async streamHistory(messages: ConversationRecord['messages']): Promise<void> {

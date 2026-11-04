@@ -184,6 +184,7 @@ import { AgentRegistry } from '../agents/registry.js';
 import { AcknowledgedAgentsService } from '../agents/acknowledgedAgents.js';
 import { setGlobalProxy, updateGlobalFetchTimeouts } from '../utils/fetch.js';
 import { ExperimentFlags } from '../code_assist/experiments/flagNames.js';
+import type { ProviderAccount } from '../providers/types.js';
 import { debugLogger } from '../utils/debugLogger.js';
 import { ragLogger } from '../utils/ragLogger.js';
 import { SkillManager, type SkillDefinition } from '../skills/skillManager.js';
@@ -1593,6 +1594,8 @@ export class Config implements McpContext, AgentLoopContext {
     apiKey?: string,
     baseUrl?: string,
     customHeaders?: Record<string, string>,
+    providerAccount?: ProviderAccount,
+    providerApiKey?: string,
   ) {
     // Reset availability service when switching auth
     this.modelAvailabilityService.reset();
@@ -1625,6 +1628,8 @@ export class Config implements McpContext, AgentLoopContext {
       baseUrl,
       customHeaders,
       this.vertexAiRouting,
+      providerAccount,
+      providerApiKey,
     );
     this.contentGenerator = await createContentGenerator(
       newContentGeneratorConfig,
