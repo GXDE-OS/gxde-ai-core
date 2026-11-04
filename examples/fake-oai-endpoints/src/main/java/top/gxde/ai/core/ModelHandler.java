@@ -15,9 +15,9 @@ public class ModelHandler {
   public ModelHandler() {}
 
   /**
-   * Get
-   * @param id
-   * @return
+   * Get available models.
+   * @param id The model id.
+   * @return A map of models.
    */
   private static Map<String, Object> model(String id) {
     return makeJSONObject("id", id,
