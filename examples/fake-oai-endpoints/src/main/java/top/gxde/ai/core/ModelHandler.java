@@ -20,7 +20,7 @@ public class ModelHandler {
    * @param id The model id.
    * @return A map of models.
    */
-  public static Map<String, Object> model(String id) {
+  static Map<String, Object> model(String id) {
     return makeJsonObject("id", id,
         "object", "model",
         "created", Instant.now().getEpochSecond(),

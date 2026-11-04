@@ -150,7 +150,7 @@ public class Utils {
    * @throws IOException if writing to the stream fails.
    */
   public static void sendSse(OutputStream out, String eventName, Object content)
-    throws IOException {
+      throws IOException {
     if (eventName != null) {
       writeUtf8(out, "event: " + eventName + "\n");
     }

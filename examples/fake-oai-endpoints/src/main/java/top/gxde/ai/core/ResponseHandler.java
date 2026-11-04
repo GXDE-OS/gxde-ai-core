@@ -1,8 +1,19 @@
 package top.gxde.ai.core;
 
+import static top.gxde.ai.core.Items.messageItem;
+import static top.gxde.ai.core.Items.outputText;
+import static top.gxde.ai.core.Items.reasoningItem;
+import static top.gxde.ai.core.Items.responseObject;
 import static top.gxde.ai.core.ServerCommons.readRequest;
 import static top.gxde.ai.core.ServerCommons.sendJson;
-import static top.gxde.ai.core.Utils.*;
+import static top.gxde.ai.core.Utils.beginStream;
+import static top.gxde.ai.core.Utils.ensureMap;
+import static top.gxde.ai.core.Utils.makeJsonObject;
+import static top.gxde.ai.core.Utils.segments;
+import static top.gxde.ai.core.Utils.sendSse;
+import static top.gxde.ai.core.Utils.string;
+import static top.gxde.ai.core.Utils.textContent;
+import static top.gxde.ai.core.Utils.writeUtf8;
 
 import com.sun.net.httpserver.HttpExchange;
 import java.io.IOException;
@@ -67,7 +78,7 @@ public class ResponseHandler {
    * @param transcript The dialog record.
    * @return A composed thinking process and final message.
    */
-  private static Dialogue dialogue(List<Object> transcript) {
+  public static Dialogue dialogue(List<Object> transcript) {
     String lastUser = "";
     for (Object value : transcript) {
       Map<String, Object> message = ensureMap(value);
@@ -126,8 +137,8 @@ public class ResponseHandler {
     sendJson(exchange, 200, makeJsonObject(
         "id", id, "object", "chat.completion", "created", created, "model", model,
         "choices", List.of(makeJsonObject("index", 0,
-            "message", makeJsonObject("role", "assistant", "content", d.answer,
-                "reasoning_content", d.reasoning),
+            "message", makeJsonObject("role", "assistant", "content", d.answer(),
+                "reasoning_content", d.reasoning()),
             "finish_reason", "stop", "logprobs", null)), "usage", usage));
   }
 
@@ -148,13 +159,13 @@ public class ResponseHandler {
     OutputStream out = exchange.getResponseBody();
     chatChunk(out, id, created, model, makeJsonObject("role", "assistant", "content", ""), null);
     chatChunk(out, id, created, model,
-        makeJsonObject("reasoning_content", d.reasoningParts.get(0)), null);
+        makeJsonObject("reasoning_content", d.reasoningParts().get(0)), null);
     Thread.sleep(2000);
-    for (int i = 1; i < d.reasoningParts.size(); i++) {
+    for (int i = 1; i < d.reasoningParts().size(); i++) {
       chatChunk(out, id, created, model,
-          makeJsonObject("reasoning_content", d.reasoningParts.get(i)), null);
+          makeJsonObject("reasoning_content", d.reasoningParts().get(i)), null);
     }
-    for (String segment : segments(d.answer, 64)) {
+    for (String segment : segments(d.answer(), 64)) {
       chatChunk(out, id, created, model, makeJsonObject("content", segment), null);
     }
     chatChunk(out, id, created, model, makeJsonObject(), "stop");
@@ -196,10 +207,102 @@ public class ResponseHandler {
    */
   private static Map<String, Object> chatUsage(List<Object> transcript, Dialogue d) {
     int input = approxTokens(Json.stringify(transcript));
-    int output = approxTokens(d.reasoning + d.answer);
+    int output = approxTokens(d.reasoning() + d.answer());
     return makeJsonObject("prompt_tokens", input, "completion_tokens", output, "total_tokens",
         input + output, "completion_tokens_details",
-        makeJsonObject("reasoning_tokens", approxTokens(d.reasoning)));
+        makeJsonObject("reasoning_tokens", approxTokens(d.reasoning())));
+  }
+
+  /**
+   * Composes a response for the Responses API.
+   *
+   * @param exchange the <code>HttpExchange</code> that contains the user request.
+   * @throws Exception if there is a server-side issue.
+   */
+  private static void composeResponse(HttpExchange exchange) throws Exception {
+    Map<String, Object> request = readRequest(exchange);
+    List<Object> transcript = normalizeResponses(request);
+    Dialogue d = dialogue(transcript);
+    String model = string(request.get("model"), DEFAULT_MODEL);
+    String id = "resp_" + UUID.randomUUID().toString().replace("-", "");
+    String reasoningId = "rs_" + UUID.randomUUID().toString().replace("-", "");
+    String messageId = "msg_" + UUID.randomUUID().toString().replace("-", "");
+    long created = Instant.now().getEpochSecond();
+    if (Boolean.TRUE.equals(request.get("stream"))) {
+      responsesStream(exchange, d, request, transcript, model, id, reasoningId, messageId,
+          created);
+      return;
+    }
+    Thread.sleep(2000);
+    sendJson(exchange, 200, responseObject(id, model, created, request, transcript,
+        d, reasoningId, messageId, true));
+  }
+
+  /**
+   * Streams a Responses API response as sequenced server-sent events.
+   *
+   * @param exchange the HTTP exchange to write the stream to.
+   * @param d the generated dialogue.
+   * @param request the parsed request.
+   * @param transcript the normalized transcript.
+   * @param model the model name.
+   * @param id the response identifier.
+   * @param reasoningId the reasoning item identifier.
+   * @param messageId the message item identifier.
+   * @param created the creation timestamp.
+   * @throws Exception if writing the response fails.
+   */
+  private static void responsesStream(HttpExchange exchange, Dialogue d,
+      Map<String, Object> request, List<Object> transcript, String model, String id,
+      String reasoningId, String messageId, long created) throws Exception {
+    beginStream(exchange);
+    OutputStream out = exchange.getResponseBody();
+    Seq seq = new Seq(out);
+    seq.send("response.created", "response",
+        responseObject(id, model, created, request, transcript, d, reasoningId, messageId,
+            false));
+    seq.send("response.in_progress", "response",
+        responseObject(id, model, created, request, transcript, d, reasoningId, messageId,
+            false));
+
+    seq.send("response.output_item.added", "output_index", 0,
+        "item", reasoningItem(reasoningId, "in_progress", ""));
+    seq.send("response.reasoning_summary_part.added", "item_id", reasoningId,
+        "output_index", 0, "summary_index", 0,
+        "part", makeJsonObject("type", "summary_text", "text", ""));
+    seq.send("response.reasoning_summary_text.delta", "item_id", reasoningId,
+        "output_index", 0, "summary_index", 0, "delta", d.reasoningParts().get(0));
+    Thread.sleep(2000);
+    for (int i = 1; i < d.reasoningParts().size(); i++) {
+      seq.send("response.reasoning_summary_text.delta", "item_id", reasoningId,
+          "output_index", 0, "summary_index", 0, "delta", d.reasoningParts().get(i));
+    }
+    seq.send("response.reasoning_summary_text.done", "item_id", reasoningId,
+        "output_index", 0, "summary_index", 0, "text", d.reasoning());
+    seq.send("response.reasoning_summary_part.done", "item_id", reasoningId,
+        "output_index", 0, "summary_index", 0,
+        "part", makeJsonObject("type", "summary_text", "text", d.reasoning()));
+    seq.send("response.output_item.done", "output_index", 0,
+        "item", reasoningItem(reasoningId, "completed", d.reasoning()));
+
+    seq.send("response.output_item.added", "output_index", 1,
+        "item", makeJsonObject("id", messageId, "type", "message", "role", "assistant",
+            "status", "in_progress", "content", List.of()));
+    seq.send("response.content_part.added", "item_id", messageId,
+        "output_index", 1, "content_index", 0, "part", outputText(""));
+    for (String segment : segments(d.answer(), 64)) {
+      seq.send("response.output_text.delta", "item_id", messageId,
+          "output_index", 1, "content_index", 0, "delta", segment, "logprobs", List.of());
+    }
+    seq.send("response.output_text.done", "item_id", messageId,
+        "output_index", 1, "content_index", 0, "text", d.answer(), "logprobs", List.of());
+    seq.send("response.content_part.done", "item_id", messageId,
+        "output_index", 1, "content_index", 0, "part", outputText(d.answer()));
+    seq.send("response.output_item.done", "output_index", 1,
+        "item", messageItem(messageId, d.answer()));
+    seq.send("response.completed", "response",
+        responseObject(id, model, created, request, transcript, d, reasoningId, messageId,
+            true));
   }
 
   /**
@@ -210,7 +313,7 @@ public class ResponseHandler {
    * @param value the text to measure.
    * @return the estimated token count, never less than one.
    */
-  private static int approxTokens(String value) {
+  public static int approxTokens(String value) {
     return Math.max(1, (value.length() + 3) / 4); // Not an actual tokenizer.
   }
 
@@ -235,6 +338,47 @@ public class ResponseHandler {
 
       result.add(makeJsonObject("role", string(msg.get("role"), "user"),
           "content", textContent(msg.get("content"))));
+    }
+    return result;
+  }
+
+  /**
+   * Normalizes a Responses API request into a chat transcript.
+   *
+   * @param request the parsed Responses API request.
+   * @return the normalized messages.
+   * @throws IllegalArgumentException if {@code input} is missing or has an unsupported type.
+   */
+  public static List<Object> normalizeResponses(Map<String, Object> request) {
+    Object input = request.get("input");
+    if (input == null) {
+      throw new IllegalArgumentException("'input' is required");
+    }
+    List<Object> result = new ArrayList<>();
+    if (request.get("instructions") instanceof String instructions) {
+      result.add(makeJsonObject("role", "developer", "content", instructions));
+    }
+    if (input instanceof String s) {
+      result.add(makeJsonObject("role", "user", "content", s));
+    } else if (input instanceof List<?> items) {
+      for (Object item : items) {
+        if (item instanceof String s) {
+          result.add(makeJsonObject("role", "user", "content", s));
+          continue;
+        }
+        Map<String, Object> msg = ensureMap(item);
+        if (msg.isEmpty()) {
+          continue;
+        }
+        // Skip reasoning/tool items; this mock only needs text-bearing conversation messages.
+        if ("reasoning".equals(msg.get("type"))) {
+          continue;
+        }
+        result.add(makeJsonObject("role", string(msg.get("role"), "user"),
+            "content", textContent(msg.get("content"))));
+      }
+    } else {
+      throw new IllegalArgumentException("'input' must be a string or an array");
     }
     return result;
   }
