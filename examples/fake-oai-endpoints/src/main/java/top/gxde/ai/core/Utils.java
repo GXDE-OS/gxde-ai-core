@@ -1,7 +1,6 @@
 package top.gxde.ai.core;
 
 import com.sun.net.httpserver.HttpExchange;
-
 import java.io.IOException;
 import java.io.OutputStream;
 import java.nio.charset.StandardCharsets;
@@ -21,11 +20,12 @@ public class Utils {
 
   /**
    * A simple JSON object generator (generate as <code>LinkedHashMap</code>).
+   *
    * @param objs A Java varargs accepting multiple objects that one wish to be present in JSON
    *             object.
    * @return A JSON object as a <code>LinkedHashMap</code>.
    */
-  public static Map<String, Object> makeJSONObject(Object... objs) {
+  public static Map<String, Object> makeJsonObject(Object... objs) {
     Map<String, Object> resultGen = new LinkedHashMap<>();
     for (int i = 0; i < objs.length; i += 2) {
       resultGen.put((String) objs[i], objs[i + 1]);
@@ -35,11 +35,11 @@ public class Utils {
   }
 
   /**
-   * A type conversion util that ensures the output is Map of (string, object).
-   * If a <code>Map</code> type is passed in, then it will be converted.
-   * If not, a <code>Map</code> will be returned.
+   * A type conversion util that ensures the output is Map of (string, object). If a
+   * <code>Map</code> type is passed in, then it will be converted. If not, a <code>Map</code>
+   * will be returned.
    *
-   * @param object
+   * @param object The object to convert.
    * @return A Map of (string, object).
    */
   @SuppressWarnings("unchecked")
@@ -49,7 +49,8 @@ public class Utils {
 
   /**
    * Returns a string from an object.
-   * @param object   The object pending to extract string.
+   *
+   * @param object The object pending to extract string.
    * @param fallback The fallback message if extraction failed.
    * @return A string from an object, or the fallback string when extraction failed.
    */
@@ -59,6 +60,7 @@ public class Utils {
 
   /**
    * Parse multiple format of OAI message to a unified string.
+   *
    * @param value The raw value.
    * @return A unified string.
    */
@@ -80,9 +82,7 @@ public class Utils {
             Object t = p.get("text");
             if (t instanceof String s) {
               builder.append(s);
-            }
-
-            else if (t instanceof Map<?, ?> nested) {
+            } else if (t instanceof Map<?, ?> nested) {
               builder.append(string(nested.get("value"), ""));
             } else if (p.containsKey("image_url") || "input_image".equals(p.get("type"))) {
               builder.append("[image]");
@@ -100,6 +100,7 @@ public class Utils {
 
   /**
    * Compose the header of message stream.
+   *
    * @param exchange The <code>HttpExchange</code> that contains user requests.
    * @throws IOException If there is a server side error.
    */
@@ -112,7 +113,8 @@ public class Utils {
 
   /**
    * Write message in UTF-8 format.
-   * @param out   The target output stream.
+   *
+   * @param out The target output stream.
    * @param value The value to write.
    * @throws IOException If I/O failed.
    */
@@ -123,6 +125,7 @@ public class Utils {
 
   /**
    * Slice the given string to an array of segments given the segment length.
+   *
    * @param text Target text.
    * @param size Segment length.
    * @return The generated array of segments.
@@ -131,7 +134,7 @@ public class Utils {
     List<String> result = new ArrayList<>();
     for (int i = 0; i < text.length();) {
       int end = text.offsetByCodePoints(i,
-        Math.min(size, text.codePointCount(i, text.length())));
+          Math.min(size, text.codePointCount(i, text.length())));
       result.add(text.substring(i, end));
       i = end;
     }

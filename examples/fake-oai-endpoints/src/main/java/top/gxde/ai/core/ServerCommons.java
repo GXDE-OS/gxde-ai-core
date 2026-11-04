@@ -1,14 +1,13 @@
 package top.gxde.ai.core;
 
-import com.sun.net.httpserver.HttpExchange;
+import static top.gxde.ai.core.Utils.ensureMap;
+import static top.gxde.ai.core.Utils.makeJsonObject;
 
+import com.sun.net.httpserver.HttpExchange;
 import java.io.IOException;
 import java.io.OutputStream;
 import java.nio.charset.StandardCharsets;
 import java.util.Map;
-
-import static top.gxde.ai.core.Utils.ensureMap;
-import static top.gxde.ai.core.Utils.makeJSONObject;
 
 /**
  * Common methods for a server.
@@ -21,6 +20,7 @@ public class ServerCommons {
 
   /**
    * Reads a request from a server.
+   *
    * @param exchange The <code>HttpExchange</code> that contains user requests.
    * @return Mapped JSON request.
    * @throws IOException If there is an error on server side.
@@ -38,28 +38,31 @@ public class ServerCommons {
 
     return ensureMap(parsed);
   }
+
   /**
    * Send the error over http exchange.
+   *
    * @param exchange The target http exchange.
-   * @param status   The http status code.
-   * @param message  Message payload.
+   * @param status The http status code.
+   * @param message Message payload.
    * @throws IOException If there is a server side error.
    */
-  public static void sendError(HttpExchange exchange, int status,
-                                String message) throws IOException {
-    sendJson(exchange, status, makeJSONObject("error", makeJSONObject("message",
+  public static void sendError(HttpExchange exchange, int status, String message)
+      throws IOException {
+    sendJson(exchange, status, makeJsonObject("error", makeJsonObject("message",
         message, "type", "invalid_request_error", "param", null, "code", null)));
   }
 
   /**
    * Send the message over http exchange.
+   *
    * @param exchange The target http exchange.
-   * @param status   The http status code.
-   * @param content  Message payload.
+   * @param status The http status code.
+   * @param content Message payload.
    * @throws IOException If there is a server side error.
    */
-  public static void sendJson(HttpExchange exchange, int status,
-                               Object content) throws IOException {
+  public static void sendJson(HttpExchange exchange, int status, Object content)
+      throws IOException {
     byte[] bytes = Json.stringify(content).getBytes(StandardCharsets.UTF_8);
     exchange.getResponseHeaders().set("Content-Type", "application/json; charset=utf-8");
     exchange.sendResponseHeaders(status, bytes.length);

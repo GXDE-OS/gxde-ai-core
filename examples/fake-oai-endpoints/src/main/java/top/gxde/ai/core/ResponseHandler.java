@@ -1,7 +1,16 @@
 package top.gxde.ai.core;
 
-import com.sun.net.httpserver.HttpExchange;
+import static top.gxde.ai.core.ServerCommons.readRequest;
+import static top.gxde.ai.core.ServerCommons.sendJson;
+import static top.gxde.ai.core.Utils.beginStream;
+import static top.gxde.ai.core.Utils.ensureMap;
+import static top.gxde.ai.core.Utils.makeJsonObject;
+import static top.gxde.ai.core.Utils.segments;
+import static top.gxde.ai.core.Utils.string;
+import static top.gxde.ai.core.Utils.textContent;
+import static top.gxde.ai.core.Utils.writeUtf8;
 
+import com.sun.net.httpserver.HttpExchange;
 import java.io.IOException;
 import java.io.OutputStream;
 import java.nio.charset.StandardCharsets;
@@ -12,10 +21,6 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 import java.util.UUID;
-
-import static top.gxde.ai.core.ServerCommons.readRequest;
-import static top.gxde.ai.core.ServerCommons.sendJson;
-import static top.gxde.ai.core.Utils.*;
 
 /**
  * A class that mocks a model response.
@@ -28,7 +33,6 @@ public class ResponseHandler {
    * Default constructor for request handler.
    */
   public ResponseHandler() {}
-
 
   /**
    * Represents a generated dialogue response w/ final answer.
@@ -81,27 +85,28 @@ public class ResponseHandler {
     String hash;
     try {
       byte[] bytes = MessageDigest.getInstance("SHA-256")
-        .digest(Json.stringify(transcript).getBytes(StandardCharsets.UTF_8));
+          .digest(Json.stringify(transcript).getBytes(StandardCharsets.UTF_8));
       hash = java.util.HexFormat.of().formatHex(bytes);
     } catch (NoSuchAlgorithmException e) {
       throw new IllegalStateException(e);
     }
 
     List<String> thoughts = List.of(
-      "I have received user's prompt.\n\n",
-      "I need to calculate the message's hash...\n\n",
-      "Hmm... The hash is " + hash + ".\n\n",
-      "I've got everything I need. I will now compose my final answer."
-    );
+        "I have received user's prompt.\n\n",
+        "I need to calculate the message's hash...\n\n",
+        "Hmm... The hash is " + hash + ".\n\n",
+        "I've got everything I need. I will now compose my final answer.");
 
     String fence = "```";
-    while (lastUser.contains(fence)) fence += "`";
+    while (lastUser.contains(fence)) {
+      fence += "`";
+    }
     String answer = "Oh hi there, you have reached GXDE dev's fake OAI endpoint.\n\n"
-      + "This endpoint will help you to test if your OAI client is set-up correctly.\n\n"
-      + "You should already see the thought process above, and for debugging, "
-      + "I will now give you your original prompt:\n\n"
-      + fence + "\n" + lastUser + "\n" + fence + "\n\n"
-      + "... And by the way, the dialog hash is: " + hash + ".";
+        + "This endpoint will help you to test if your OAI client is set-up correctly.\n\n"
+        + "You should already see the thought process above, and for debugging, "
+        + "I will now give you your original prompt:\n\n"
+        + fence + "\n" + lastUser + "\n" + fence + "\n\n"
+        + "... And by the way, the dialog hash is: " + hash + ".";
     return new Dialogue(String.join("", thoughts), thoughts, answer);
   }
 
@@ -111,7 +116,7 @@ public class ResponseHandler {
    * @param exchange the <code>HttpExchange</code> that contains user requests.
    * @throws Exception If there is a server side issue.
    */
-  private static void composeChatResponse(HttpExchange exchange) throws Exception {
+  public static void composeChatResponse(HttpExchange exchange) throws Exception {
     Map<String, Object> request = readRequest(exchange);
     List<Object> transcript = normalizeMessages(request.get("messages"));
     Dialogue d = dialogue(transcript);
@@ -124,12 +129,12 @@ public class ResponseHandler {
     }
     Thread.sleep(2000);
     Map<String, Object> usage = chatUsage(transcript, d);
-    sendJson(exchange, 200, makeJSONObject(
-      "id", id, "object", "chat.completion", "created", created, "model", model,
-      "choices", List.of(makeJSONObject("index", 0,
-        "message", makeJSONObject("role", "assistant", "content", d.answer,
-          "reasoning_content", d.reasoning),
-        "finish_reason", "stop", "logprobs", null)), "usage", usage));
+    sendJson(exchange, 200, makeJsonObject(
+        "id", id, "object", "chat.completion", "created", created, "model", model,
+        "choices", List.of(makeJsonObject("index", 0,
+            "message", makeJsonObject("role", "assistant", "content", d.answer,
+                "reasoning_content", d.reasoning),
+            "finish_reason", "stop", "logprobs", null)), "usage", usage));
   }
 
   /**
@@ -144,24 +149,27 @@ public class ResponseHandler {
    * @throws Exception if writing the response fails.
    */
   private static void chatStream(HttpExchange exchange, Map<String, Object> request,
-                                 Dialogue d, String model, String id, long created) throws Exception {
+      Dialogue d, String model, String id, long created) throws Exception {
     beginStream(exchange);
     OutputStream out = exchange.getResponseBody();
-    chatChunk(out, id, created, model, makeJSONObject("role", "assistant", "content", ""), null);
-    chatChunk(out, id, created, model, makeJSONObject("reasoning_content", d.reasoningParts.get(0)), null);
+    chatChunk(out, id, created, model, makeJsonObject("role", "assistant", "content", ""), null);
+    chatChunk(out, id, created, model,
+        makeJsonObject("reasoning_content", d.reasoningParts.get(0)), null);
     Thread.sleep(2000);
     for (int i = 1; i < d.reasoningParts.size(); i++) {
-      chatChunk(out, id, created, model, makeJSONObject("reasoning_content", d.reasoningParts.get(i)), null);
+      chatChunk(out, id, created, model,
+          makeJsonObject("reasoning_content", d.reasoningParts.get(i)), null);
     }
     for (String segment : segments(d.answer, 64)) {
-      chatChunk(out, id, created, model, makeJSONObject("content", segment), null);
+      chatChunk(out, id, created, model, makeJsonObject("content", segment), null);
     }
-    chatChunk(out, id, created, model, makeJSONObject(), "stop");
+    chatChunk(out, id, created, model, makeJsonObject(), "stop");
     Map<String, Object> options = ensureMap(request.get("stream_options"));
     if (Boolean.TRUE.equals(options.get("include_usage"))) {
-      sendSse(out, null, makeJSONObject("id", id, "object", "chat.completion.chunk",
-        "created", created, "model", model,
-        "choices", List.of(), "usage", chatUsage(normalizeMessages(request.get("messages")), d)));
+      sendSse(out, null, makeJsonObject("id", id, "object", "chat.completion.chunk",
+          "created", created, "model", model,
+          "choices", List.of(), "usage",
+          chatUsage(normalizeMessages(request.get("messages")), d)));
     }
     writeUtf8(out, "data: [DONE]\n\n");
   }
@@ -178,11 +186,11 @@ public class ResponseHandler {
    * @throws IOException if writing to the stream fails.
    */
   private static void chatChunk(OutputStream out, String id, long created, String model,
-                                Map<String, Object> delta, String finishReason) throws IOException {
-    sendSse(out, null, makeJSONObject("id", id, "object", "chat.completion.chunk",
-      "created", created, "model", model,
-      "choices", List.of(makeJSONObject("index", 0, "delta", delta,
-        "logprobs", null, "finish_reason", finishReason))));
+      Map<String, Object> delta, String finishReason) throws IOException {
+    sendSse(out, null, makeJsonObject("id", id, "object", "chat.completion.chunk",
+        "created", created, "model", model,
+        "choices", List.of(makeJsonObject("index", 0, "delta", delta,
+            "logprobs", null, "finish_reason", finishReason))));
   }
 
   /**
@@ -193,8 +201,11 @@ public class ResponseHandler {
    * @param content the value serialized into the {@code data} field.
    * @throws IOException if writing to the stream fails.
    */
-  private static void sendSse(OutputStream out, String eventName, Object content) throws IOException {
-    if (eventName != null) writeUtf8(out, "event: " + eventName + "\n");
+  private static void sendSse(OutputStream out, String eventName, Object content)
+      throws IOException {
+    if (eventName != null) {
+      writeUtf8(out, "event: " + eventName + "\n");
+    }
     writeUtf8(out, "data: " + Json.stringify(content) + "\n\n");
   }
 
@@ -208,8 +219,9 @@ public class ResponseHandler {
   private static Map<String, Object> chatUsage(List<Object> transcript, Dialogue d) {
     int input = approxTokens(Json.stringify(transcript));
     int output = approxTokens(d.reasoning + d.answer);
-    return makeJSONObject("prompt_tokens", input, "completion_tokens", output, "total_tokens", input + output,
-      "completion_tokens_details", makeJSONObject("reasoning_tokens", approxTokens(d.reasoning)));
+    return makeJsonObject("prompt_tokens", input, "completion_tokens", output, "total_tokens",
+        input + output, "completion_tokens_details",
+        makeJsonObject("reasoning_tokens", approxTokens(d.reasoning)));
   }
 
   /**
@@ -243,8 +255,8 @@ public class ResponseHandler {
         continue;
       }
 
-      result.add(makeJSONObject("role", string(msg.get("role"), "user"),
-        "content", textContent(msg.get("content"))));
+      result.add(makeJsonObject("role", string(msg.get("role"), "user"),
+          "content", textContent(msg.get("content"))));
     }
     return result;
   }
