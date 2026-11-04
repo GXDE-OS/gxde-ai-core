@@ -1,0 +1,45 @@
+plugins {
+  id 'java'
+  id 'checkstyle'
+}
+
+group = 'top.gxde.ai.core'
+version = '1.0-SNAPSHOT'
+
+repositories {
+  mavenCentral()
+}
+
+dependencies {
+  testImplementation platform('org.junit:junit-bom:6.0.0')
+  testImplementation 'org.junit.jupiter:junit-jupiter'
+  testRuntimeOnly 'org.junit.platform:junit-platform-launcher'
+}
+
+tasks.withType(JavaCompile).configureEach {
+  options.encoding = 'UTF-8'
+  options.compilerArgs += ['--add-modules', 'jdk.httpserver']
+}
+
+tasks.withType(JavaExec).configureEach {
+  jvmArgs '--add-modules', 'jdk.httpserver'
+}
+
+tasks.withType(Test).configureEach {
+  jvmArgs '--add-modules', 'jdk.httpserver'
+}
+
+checkstyle {
+  toolVersion = '14.3.0'
+  config = resources.text.fromArchiveEntry(
+      configurations.checkstyle.filter { it.name ==~ /checkstyle-[0-9.]+\.jar/ },
+      'google_checks.xml')
+  // Google rules report warnings by default; fail the build on any violation.
+  maxWarnings = 0
+  maxErrors = 0
+  ignoreFailures = false
+}
+
+test {
+  useJUnitPlatform()
+}
