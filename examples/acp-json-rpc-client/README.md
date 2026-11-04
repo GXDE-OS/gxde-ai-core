@@ -1,0 +1,46 @@
+# GXDE AI Core ACP JSON RPC Example
+
+## Introduction
+
+This is an example of how to use JSON RPC to communicate with GXDE AI Core ACP
+server.
+
+## Documentation
+
+You may generate the documentation by running following command:
+
+```bash
+$ ./gradlew clean javadoc
+```
+
+The document may be found at `build/docs/javadoc/index.html`.
+
+## Code Style Guide
+
+You need to follow
+[Google Java Style Guide](https://google.github.io/styleguide/javaguide.html).
+
+### Auto Code Style Checks
+
+Gradle uses Checkstyle 14.3.0's `google_checks.xml` to check production &
+testing code. Note that any warning or error will make the check fail. If you
+trigger `check` or `build`, the code style check will be also triggered.
+
+### Check Style Manually
+
+You may simply run the code style checking + unit tests manually by running:
+
+```sh
+$ ./gradlew clean check
+```
+
+If you only need to check code style:
+
+```sh
+$ ./gradlew checkstyleMain checkstyleTest
+```
+
+Your report will be available in `build/reports/checkstyle/`.
+
+Please note that while Checkstyle checks your code style, it does not re-format
+your code automatically.
