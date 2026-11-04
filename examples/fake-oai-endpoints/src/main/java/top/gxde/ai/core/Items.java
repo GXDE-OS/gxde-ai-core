@@ -12,6 +12,11 @@ import java.util.Map;
  */
 public class Items {
   /**
+   * Default constructor of item class.
+   */
+  public Items() {}
+
+  /**
    * Builds a response object for the Responses API.
    *
    * @param id the response identifier.

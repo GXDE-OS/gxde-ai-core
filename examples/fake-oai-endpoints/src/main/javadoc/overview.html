@@ -1,0 +1,23 @@
+<h1>Fake OAI endpoints</h1>
+
+<h2>Introduction</h2>
+<p>This is a fake OAI-compatible end point that allow you to test your AI locally.</p>
+
+<h2>Documentation</h2>
+<p>You may generate the documentation by running following command:</p>
+<pre><code class="language-bash">$ ./gradlew clean javadoc</code></pre>
+<p>The document may be found at <code>build/docs/javadoc/index.html</code>.</p>
+
+<h2>Code Style Guide</h2>
+<p>You need to follow <a href="https://google.github.io/styleguide/javaguide.html">Google Java Style Guide</a>.</p>
+
+<h3>Auto Code Style Checks</h3>
+<p>Gradle uses Checkstyle 14.3.0's <code>google_checks.xml</code> to check production &amp; testing code. Note that any warning or error will make the check fail. If you trigger <code>check</code> or <code>build</code>, the code style check will be also triggered.</p>
+
+<h3>Check Style Manually</h3>
+<p>You may simply run the code style checking + unit tests manually by running:</p>
+<pre><code class="language-sh">$ ./gradlew clean check</code></pre>
+<p>If you only need to check code style:</p>
+<pre><code class="language-sh">$ ./gradlew checkstyleMain checkstyleTest</code></pre>
+<p>Your report will be available in <code>build/reports/checkstyle/</code>.</p>
+<p>Please note that while Checkstyle checks your code style, it does not re-format your code automatically.</p>

@@ -3,6 +3,14 @@
 ## Introduction
 This is a fake OAI-compatible end point that allow you to test your AI locally.
 
+## Documentation
+You may generate the documentation by running following command:
+```bash
+$ ./gradlew clean javadoc
+```
+
+The document may be found at `build/docs/javadoc/index.html`.
+
 ## Code Style Guide
 You need to follow [Google Java Style Guide](https://google.github.io/styleguide/javaguide.html).
 
