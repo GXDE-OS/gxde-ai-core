@@ -24,4 +24,4 @@ Makefile eol=lf
 *.otf binary
 
 # Count language in example folder.
-example/**/* linguist-detectable=true
+examples/**/* linguist-detectable=true
