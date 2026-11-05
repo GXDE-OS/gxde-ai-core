@@ -18,6 +18,10 @@ else ifeq ($(DEB_HOST_ARCH),i386)
 NODE_ARCH := ia32
 PORTABLE_NODE_ARCH := x86
 GXDE_DEPENDS := libc6 (>= 2.28), libstdc++6, libgcc-s1
+else ifeq ($(DEB_HOST_ARCH),loong64)
+NODE_ARCH := loong64
+PORTABLE_NODE_ARCH := loong64
+GXDE_DEPENDS := libc6 (>= 2.38), libstdc++6, libgcc-s1
 else
 NODE_ARCH := $(shell $(NODE) -p "process.arch")
 PORTABLE_NODE_ARCH :=
@@ -55,6 +59,18 @@ override_dh_auto_build:
 		export PATH="$(CURDIR)/debian/.npm/node_modules/.bin:$$PATH"; \
 		test "$$(npm --version)" = "$(BOOTSTRAP_NPM_VERSION)"; \
 	fi; \
+	if [ "$(DEB_HOST_ARCH)" = loong64 ]; then \
+		echo "loong64: checking Node.js $$(node --version) native base64 round-trip..."; \
+		grep -m1 -iE "model name|cpu model" /proc/cpuinfo || true; \
+		if node -e 'const b=require("crypto").randomBytes(1<<20);const ok=Buffer.from(b.toString("base64"),"base64").equals(b);console.log(ok);process.exit(ok?0:1)'; then \
+			echo "loong64: base64 round-trip OK."; \
+		else \
+			echo "loong64: WARNING: native base64 round-trip FAILED on this host."; \
+			echo "loong64: Under QEMU emulation this is expected and the build continues"; \
+			echo "loong64: via debian/base64-fallback.cjs. On real LoongArch hardware it"; \
+			echo "loong64: means the bundled Node.js is broken and the package must not ship."; \
+		fi; \
+	fi; \
 	if [ -n "$(NPM_IGNORE_SCRIPTS)" ]; then \
 		HUSKY=0 npm ci --ignore-scripts; \
 		npm rebuild $(NPM_REBUILD_PKGS); \
@@ -62,7 +78,8 @@ override_dh_auto_build:
 	else \
 		HUSKY=0 npm ci; \
 	fi; \
-	node scripts/build_binary.js --skip-install --skip-bundle
+	NODE_OPTIONS="--require $(CURDIR)/debian/base64-fallback.cjs" \
+		node scripts/build_binary.js --skip-install --skip-bundle
 
 override_dh_auto_test:
 	# The upstream test suite is not run during package builds.
