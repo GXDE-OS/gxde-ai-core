@@ -140,6 +140,7 @@ describe('Session', () => {
       getEnableRecursiveFileSearch: vi.fn().mockReturnValue(false),
       getDebugMode: vi.fn().mockReturnValue(false),
       getMessageBus: vi.fn().mockReturnValue(mockMessageBus),
+      getApprovalMode: vi.fn().mockReturnValue('default'),
       setApprovalMode: vi.fn(),
       setModel: vi.fn(),
       refreshAuth: vi.fn(),
@@ -254,6 +255,75 @@ describe('Session', () => {
       },
     });
     expect(result).toMatchObject({ stopReason: 'end_turn' });
+  });
+
+  it('should enable chat mode without changing the approval mode', () => {
+    expect(session.setMode('chat')).toEqual({});
+
+    expect(mockConfig.setApprovalMode).not.toHaveBeenCalled();
+  });
+
+  it('should prepend chat session context in chat mode', async () => {
+    vi.useFakeTimers();
+    vi.setSystemTime(new Date('2026-11-05T12:00:00'));
+    mockConfig.getModel.mockReturnValue('qwen3-max');
+    session.setMode('chat');
+    const stream = createMockStream([
+      {
+        type: GeminiEventType.Content,
+        value: '你好',
+      },
+    ]);
+    mockSendMessageStream.mockReturnValue(stream);
+
+    try {
+      await session.prompt({
+        sessionId: 'session-1',
+        prompt: [{ type: 'text', text: '你好' }],
+      });
+    } finally {
+      vi.useRealTimers();
+    }
+
+    const [requestParts] = mockSendMessageStream.mock.calls[0];
+    expect(requestParts).toHaveLength(2);
+    expect(requestParts[0].text).toContain('<session_context>');
+    expect(requestParts[0].text).toContain(
+      'You are a helpful assistant. You are qwen3-max. We are setting up the context for our chat.',
+    );
+    expect(requestParts[0].text).toContain(
+      "Today's date is 2026年11月5日星期四 (formatted according to the user's locale).",
+    );
+    expect(requestParts[0].text).toContain(
+      `My operating system is: ${process.platform}.`,
+    );
+    expect(requestParts[0].text).toContain(
+      'You are chatting with user right now, while tool calls remain available. Your primary task right now is to carry on the conversation; please keep your tone lively and positive.',
+    );
+    expect(requestParts[0].text).toContain("User's preferred language is ");
+    expect(requestParts[0].text).toContain('</session_context>');
+    expect(requestParts[1]).toEqual({ text: '你好' });
+  });
+
+  it('should not prepend chat session context outside chat mode', async () => {
+    const stream = createMockStream([
+      {
+        type: GeminiEventType.Content,
+        value: 'Hello',
+      },
+    ]);
+    mockSendMessageStream.mockReturnValue(stream);
+
+    await session.prompt({
+      sessionId: 'session-1',
+      prompt: [{ type: 'text', text: 'Hi' }],
+    });
+
+    expect(mockSendMessageStream).toHaveBeenCalledWith(
+      [{ text: 'Hi' }],
+      expect.any(AbortSignal),
+      expect.any(String),
+    );
   });
 
   it('should include standard ACP token usage in PromptResponse.usage and emit usage_update', async () => {

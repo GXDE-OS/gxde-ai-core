@@ -15,15 +15,20 @@ import {
 } from 'vitest';
 import {
   getEnvironmentContext,
+  getChatEnvironmentContext,
   getDirectoryContextString,
 } from './environmentContext.js';
 import type { Config } from '../config/config.js';
 import type { Storage } from '../config/storage.js';
 import { getFolderStructure } from './getFolderStructure.js';
+import { readLanguagePreference } from './languagePreference.js';
 
 vi.mock('../config/config.js');
 vi.mock('./getFolderStructure.js', () => ({
   getFolderStructure: vi.fn(),
+}));
+vi.mock('./languagePreference.js', () => ({
+  readLanguagePreference: vi.fn(),
 }));
 vi.mock('../tools/read-many-files.js');
 
@@ -205,5 +210,50 @@ describe('getEnvironmentContext', () => {
     const parts = await getEnvironmentContext(mockConfig as Config);
 
     expect(parts.length).toBe(1); // No extra part added
+  });
+});
+
+describe('getChatEnvironmentContext', () => {
+  beforeEach(() => {
+    vi.mocked(readLanguagePreference).mockReturnValue(undefined);
+  });
+
+  afterEach(() => {
+    vi.useRealTimers();
+  });
+
+  it('should return the ACP chat session context with dynamic model and environment details', () => {
+    vi.useFakeTimers();
+    vi.setSystemTime(new Date('2026-11-05T12:00:00'));
+    const mockConfig = {
+      getModel: vi.fn().mockReturnValue('qwen3-max'),
+    } as unknown as Config;
+    const systemLocale = Intl.DateTimeFormat().resolvedOptions().locale;
+
+    const parts = getChatEnvironmentContext(mockConfig);
+
+    expect(parts).toHaveLength(1);
+    expect(parts[0].text).toBe(
+      `<session_context>
+You are a helpful assistant. You are qwen3-max. We are setting up the context for our chat.
+Today's date is 2026年11月5日星期四 (formatted according to the user's locale).
+My operating system is: ${process.platform}.
+You are chatting with user right now, while tool calls remain available. Your primary task right now is to carry on the conversation; please keep your tone lively and positive.
+User's preferred language is ${systemLocale}.
+</session_context>`,
+    );
+  });
+
+  it('should use the configured language preference', () => {
+    vi.mocked(readLanguagePreference).mockReturnValue('请用简体中文回答');
+    const mockConfig = {
+      getModel: vi.fn().mockReturnValue('qwen3-max'),
+    } as unknown as Config;
+
+    const parts = getChatEnvironmentContext(mockConfig);
+
+    expect(parts[0].text).toContain(
+      "User's preferred language is 请用简体中文回答.",
+    );
   });
 });

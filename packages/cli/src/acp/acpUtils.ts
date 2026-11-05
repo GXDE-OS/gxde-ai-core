@@ -238,6 +238,11 @@ export function buildAvailableModes(isPlanEnabled: boolean): acp.SessionMode[] {
       name: 'YOLO',
       description: 'Auto-approves all tools',
     },
+    {
+      id: 'chat',
+      name: 'Chat',
+      description: 'Conversational mode with tools available',
+    },
   ];
 
   if (isPlanEnabled) {

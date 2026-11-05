@@ -195,6 +195,11 @@ describe('AcpSessionManager', () => {
           description: 'Auto-approves edit tools',
         },
         { id: 'yolo', name: 'YOLO', description: 'Auto-approves all tools' },
+        {
+          id: 'chat',
+          name: 'Chat',
+          description: 'Conversational mode with tools available',
+        },
       ],
       currentModeId: 'default',
     });
@@ -269,6 +274,11 @@ describe('AcpSessionManager', () => {
           description: 'Auto-approves edit tools',
         },
         { id: 'yolo', name: 'YOLO', description: 'Auto-approves all tools' },
+        {
+          id: 'chat',
+          name: 'Chat',
+          description: 'Conversational mode with tools available',
+        },
         { id: 'plan', name: 'Plan', description: 'Read-only mode' },
       ],
       currentModeId: 'plan',

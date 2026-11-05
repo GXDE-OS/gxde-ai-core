@@ -42,6 +42,7 @@ import {
   tokenLimit,
   AuthType,
   type ProviderAccount,
+  getChatEnvironmentContext,
 } from '@google/gemini-cli-core';
 import * as acp from '@agentclientprotocol/sdk';
 import type { Part, FunctionCall } from '@google/genai';
@@ -65,10 +66,13 @@ const StructuredErrorSchema = z.object({
   message: z.string().optional(),
 });
 
+const CHAT_MODE_ID = 'chat';
+
 export class Session {
   private pendingPrompt: AbortController | null = null;
   private commandHandler = new CommandHandler();
   private callIdCounter = 0;
+  private currentModeId: acp.SessionModeId;
   private readonly disposeController = new AbortController();
 
   private generateCallId(name: string): string {
@@ -82,6 +86,8 @@ export class Session {
     private readonly connection: acp.AgentSideConnection,
     private readonly settings: LoadedSettings,
   ) {
+    this.currentModeId = this.context.config.getApprovalMode();
+
     coreEvents.on(
       CoreEvent.ApprovalModeChanged,
       this.handleApprovalModeChanged,
@@ -222,8 +228,12 @@ export class Session {
     if (!mode) {
       throw new Error(`Invalid or unavailable mode: ${modeId}`);
     }
-    // eslint-disable-next-line @typescript-eslint/no-unsafe-type-assertion
-    this.context.config.setApprovalMode(mode.id as ApprovalMode);
+
+    this.currentModeId = mode.id;
+    if (mode.id !== CHAT_MODE_ID) {
+      // eslint-disable-next-line @typescript-eslint/no-unsafe-type-assertion
+      this.context.config.setApprovalMode(mode.id as ApprovalMode);
+    }
     return {};
   }
 
@@ -465,7 +475,10 @@ export class Session {
       },
     });
 
-    let currentParts: Part[] = parts;
+    let currentParts: Part[] =
+      this.currentModeId === CHAT_MODE_ID
+        ? [...getChatEnvironmentContext(this.context.config), ...parts]
+        : parts;
     let turnCount = 0;
     const maxTurns = this.context.config.getMaxSessionTurns();
 

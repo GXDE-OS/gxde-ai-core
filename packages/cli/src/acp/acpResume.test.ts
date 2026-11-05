@@ -222,6 +222,11 @@ describe('GeminiAgent Session Resume', () => {
             description: 'Auto-approves all tools',
           },
           {
+            id: 'chat',
+            name: 'Chat',
+            description: 'Conversational mode with tools available',
+          },
+          {
             id: ApprovalMode.PLAN,
             name: 'Plan',
             description: 'Read-only mode',

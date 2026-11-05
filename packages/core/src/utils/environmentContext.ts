@@ -10,6 +10,7 @@ import type { Config } from '../config/config.js';
 import { getFolderStructure } from './getFolderStructure.js';
 import type { HistoryTurn } from '../core/agentChatHistory.js';
 import { deriveStableId } from './cryptoUtils.js';
+import { readLanguagePreference } from './languagePreference.js';
 
 export const INITIAL_HISTORY_LENGTH = 1;
 
@@ -80,6 +81,30 @@ ${environmentMemory}
   const initialParts: Part[] = [{ text: context }];
 
   return initialParts;
+}
+
+export function getChatEnvironmentContext(config: Config): Part[] {
+  const today = new Date().toLocaleDateString(undefined, {
+    weekday: 'long',
+    year: 'numeric',
+    month: 'long',
+    day: 'numeric',
+  });
+  const platform = process.platform;
+  const modelName = config.getModel();
+  const preferredLanguage =
+    readLanguagePreference() ?? Intl.DateTimeFormat().resolvedOptions().locale;
+
+  const context = `
+<session_context>
+You are a helpful assistant. You are ${modelName}. We are setting up the context for our chat.
+Today's date is ${today} (formatted according to the user's locale).
+My operating system is: ${platform}.
+You are chatting with user right now, while tool calls remain available. Your primary task right now is to carry on the conversation; please keep your tone lively and positive.
+User's preferred language is ${preferredLanguage}.
+</session_context>`.trim();
+
+  return [{ text: context }];
 }
 
 export async function getInitialChatHistory(
