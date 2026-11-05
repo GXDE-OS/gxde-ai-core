@@ -21,6 +21,8 @@ OFFICIAL_NODE_ARCH :=
 GXDE_DEPENDS := nodejs
 endif
 
+BOOTSTRAP_NPM_VERSION := 10.9.2
+
 %:
 	dh $@
 
@@ -34,7 +36,9 @@ override_dh_auto_build:
 		HUSKY=0 npm ci; \
 		node scripts/build_binary.js --skip-install --skip-bundle; \
 	else \
-		HUSKY=0 npm ci; \
+		npm install --prefix "$(CURDIR)/debian/.npm" --no-save --no-package-lock \
+			--no-audit --no-fund "npm@$(BOOTSTRAP_NPM_VERSION)"; \
+		HUSKY=0 $(NODE) "$(CURDIR)/debian/.npm/node_modules/npm/bin/npm-cli.js" ci; \
 		$(NODE) scripts/build_binary.js --skip-install --skip-bundle; \
 	fi
 
@@ -57,7 +61,7 @@ override_dh_install:
 override_dh_auto_clean:
 	# Keep dist/ so a separate build step can feed
 	# `dpkg-buildpackage -T binary` without rebuilding from scratch.
-	rm -rf bundle node_modules build debian/.node debian/.node.tar.xz
+	rm -rf bundle node_modules build debian/.node debian/.node.tar.xz debian/.npm
 	rm -rf packages/vscode-ide-companion/node_modules
 	rm -rf packages/cli/src/generated packages/core/src/generated
 	dh_clean

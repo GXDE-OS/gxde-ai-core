@@ -3,7 +3,7 @@ gxde-ai-core (0.0.2) unstable; urgency=medium
   * Allows ACP to manage providers.
   * Provides an local OAI compactiable server so that the users may test endpoints locally without consuming their API tokens.
 
- -- CharOfString <root@charofstring.cc> Tue, 03 Nov 2026 19:50:20 -0600
+ -- CharOfString <root@charofstring.cc>  Tue, 03 Nov 2026 19:50:20 -0600
 
 gxde-ai-core (0.0.1) unstable; urgency=medium
 
