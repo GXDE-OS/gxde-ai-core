@@ -8,8 +8,8 @@ Build-Depends: debhelper-compat (= 13),
                xz-utils,
                git,
                libsecret-1-0,
-               nodejs (>= 20) [!amd64 !arm64],
-               npm [!amd64 !arm64]
+               nodejs (>= 20) [!amd64 !arm64 !i386],
+               npm [!amd64 !arm64 !i386]
 Standards-Version: 4.6.2
 Rules-Requires-Root: no
 Homepage: https://github.com/CharOfString/hachimi

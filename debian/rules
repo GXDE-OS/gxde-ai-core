@@ -3,25 +3,40 @@
 DEB_HOST_ARCH ?= $(shell dpkg-architecture -qDEB_HOST_ARCH)
 NODE := $(shell command -v node || command -v nodejs || echo node)
 
+# PORTABLE_NODE_ARCH: arch name of the standalone Node.js tarball fetched by
+# debian/fetch-node.sh. Distro Node.js links against libnode, so its
+# executable lacks the SEA fuse and cannot be used to build the binary.
 ifeq ($(DEB_HOST_ARCH),amd64)
 NODE_ARCH := x64
-OFFICIAL_NODE_ARCH := x64
+PORTABLE_NODE_ARCH := x64
 GXDE_DEPENDS := libc6 (>= 2.28), libstdc++6, libgcc-s1
 else ifeq ($(DEB_HOST_ARCH),arm64)
 NODE_ARCH := arm64
-OFFICIAL_NODE_ARCH := arm64
+PORTABLE_NODE_ARCH := arm64
 GXDE_DEPENDS := libc6 (>= 2.28), libstdc++6, libgcc-s1
 else ifeq ($(DEB_HOST_ARCH),i386)
 NODE_ARCH := ia32
-OFFICIAL_NODE_ARCH :=
-GXDE_DEPENDS := nodejs
+PORTABLE_NODE_ARCH := x86
+GXDE_DEPENDS := libc6 (>= 2.28), libstdc++6, libgcc-s1
 else
 NODE_ARCH := $(shell $(NODE) -p "process.arch")
-OFFICIAL_NODE_ARCH :=
+PORTABLE_NODE_ARCH :=
 GXDE_DEPENDS := nodejs
 endif
 
 BOOTSTRAP_NPM_VERSION := 10.9.2
+
+# @vscode/vsce-sign (a devDependency of the VS Code companion, not part of the
+# binary) aborts its postinstall on anything but x64/arm/arm64. Elsewhere
+# `npm ci` runs with --ignore-scripts, install scripts are re-run only for the
+# packages the build needs, and the bundle (normally built by the root
+# `prepare` script) is built explicitly.
+ifneq ($(filter $(NODE_ARCH),x64 arm64),)
+NPM_IGNORE_SCRIPTS :=
+else
+NPM_IGNORE_SCRIPTS := 1
+endif
+NPM_REBUILD_PKGS := esbuild node-pty @github/keytar tree-sitter-bash protobufjs msw
 
 %:
 	dh $@
@@ -30,17 +45,24 @@ override_dh_auto_configure:
 	# Nothing to configure; npm ci runs in override_dh_auto_build.
 
 override_dh_auto_build:
-	@if [ -n "$(OFFICIAL_NODE_ARCH)" ]; then \
-		./debian/fetch-node.sh "$(OFFICIAL_NODE_ARCH)"; \
+	@set -e; \
+	if [ -n "$(PORTABLE_NODE_ARCH)" ]; then \
+		./debian/fetch-node.sh "$(PORTABLE_NODE_ARCH)"; \
 		export PATH="$(CURDIR)/debian/.node/bin:$$PATH"; \
-		HUSKY=0 npm ci; \
-		node scripts/build_binary.js --skip-install --skip-bundle; \
 	else \
 		npm install --prefix "$(CURDIR)/debian/.npm" --no-save --no-package-lock \
 			--no-audit --no-fund "npm@$(BOOTSTRAP_NPM_VERSION)"; \
-		HUSKY=0 $(NODE) "$(CURDIR)/debian/.npm/node_modules/npm/bin/npm-cli.js" ci; \
-		$(NODE) scripts/build_binary.js --skip-install --skip-bundle; \
-	fi
+		export PATH="$(CURDIR)/debian/.npm/node_modules/.bin:$$PATH"; \
+		test "$$(npm --version)" = "$(BOOTSTRAP_NPM_VERSION)"; \
+	fi; \
+	if [ -n "$(NPM_IGNORE_SCRIPTS)" ]; then \
+		HUSKY=0 npm ci --ignore-scripts; \
+		npm rebuild $(NPM_REBUILD_PKGS); \
+		npm run bundle; \
+	else \
+		HUSKY=0 npm ci; \
+	fi; \
+	node scripts/build_binary.js --skip-install --skip-bundle
 
 override_dh_auto_test:
 	# The upstream test suite is not run during package builds.
