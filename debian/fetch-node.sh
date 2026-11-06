@@ -3,11 +3,11 @@
 # standalone SEA build is possible. Distro Node binaries on Debian link against
 # libnode, which would make the resulting package depend on Node.js at runtime
 # (and the SEA fuse lives in libnode, so postject cannot inject the blob).
-# x64/arm64 come from nodejs.org; x86 (i386) and loong64 are only published by
-# the Node.js unofficial-builds project.
+# x64/arm64 come from nodejs.org; x86 (i386), loong64 and riscv64 are only
+# published by the Node.js unofficial-builds project.
 set -eu
 
-arch="${1:?usage: fetch-node.sh x64|arm64|x86|loong64}"
+arch="${1:?usage: fetch-node.sh x64|arm64|x86|loong64|riscv64}"
 version="20.19.0"
 base_url="https://nodejs.org/dist"
 unofficial=""
@@ -28,6 +28,10 @@ case "$arch" in
     unofficial=1
     version="20.19.5"
     sha256="e97e50293d1c545a68f42d2c27f7de92ccf8c8a49e4b79692641ea2fe0461272"
+    ;;
+  riscv64)
+    unofficial=1
+    sha256="c015869d4bf0104fe259f3abd75f307e296adee9ba269ebdc294da962aad1f09"
     ;;
   *)
     echo "Unsupported portable Node.js architecture: $arch" >&2

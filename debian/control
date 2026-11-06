@@ -11,8 +11,8 @@ Build-Depends: debhelper-compat (= 13),
                libsecret-1-dev [!amd64 !arm64 !i386],
                pkg-config [!amd64 !arm64 !i386],
                python3 [!amd64 !arm64 !i386],
-               nodejs (>= 20) [!amd64 !arm64 !i386 !loong64],
-               npm [!amd64 !arm64 !i386 !loong64]
+               nodejs (>= 20) [!amd64 !arm64 !i386 !loong64 !riscv64],
+               npm [!amd64 !arm64 !i386 !loong64 !riscv64]
 Standards-Version: 4.6.2
 Rules-Requires-Root: no
 Homepage: https://github.com/CharOfString/hachimi
