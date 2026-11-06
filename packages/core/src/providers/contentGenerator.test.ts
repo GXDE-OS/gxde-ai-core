@@ -38,6 +38,62 @@ function sse(events: unknown[]) {
 
 afterEach(() => vi.unstubAllGlobals());
 describe('provider protocol adapter', () => {
+  it('accepts null id and function fields on streamed tool call deltas', async () => {
+    vi.stubGlobal(
+      'fetch',
+      vi.fn().mockResolvedValue(
+        sse([
+          {
+            choices: [
+              {
+                delta: {
+                  tool_calls: [
+                    {
+                      index: 0,
+                      id: 'call1',
+                      function: { name: 'read_file', arguments: null },
+                    },
+                  ],
+                },
+              },
+            ],
+          },
+          {
+            choices: [
+              {
+                delta: {
+                  tool_calls: [
+                    {
+                      index: 0,
+                      id: null,
+                      function: { name: null, arguments: '{"path":"a"}' },
+                    },
+                  ],
+                },
+                finish_reason: 'tool_calls',
+              },
+            ],
+          },
+          '[DONE]',
+        ]),
+      ),
+    );
+    const generator = new ProviderContentGenerator(
+      account,
+      'private-key',
+      () => 'chat',
+    );
+    const result = await generator.generateContent({
+      model: 'chat',
+      contents: 'hi',
+      config: { abortSignal: new AbortController().signal },
+    });
+
+    expect(result.functionCalls).toEqual([
+      { id: 'call1', name: 'read_file', args: { path: 'a' } },
+    ]);
+  });
+
   it('routes auxiliary Gemini model names to the selected account model and joins streamed tools', async () => {
     const fetchMock = vi.fn().mockResolvedValue(
       sse([

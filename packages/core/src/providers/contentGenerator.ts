@@ -44,13 +44,15 @@ const openAIChunkSchema = z.object({
               .array(
                 z.object({
                   index: z.number(),
-                  id: z.string().optional(),
+                  // Some OpenAI-compatible providers send null instead of
+                  // omitting these fields on continuation deltas.
+                  id: z.string().nullish(),
                   function: z
                     .object({
-                      name: z.string().optional(),
-                      arguments: z.string().optional(),
+                      name: z.string().nullish(),
+                      arguments: z.string().nullish(),
                     })
-                    .optional(),
+                    .nullish(),
                 }),
               )
               .optional(),
