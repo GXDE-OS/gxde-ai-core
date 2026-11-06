@@ -2,7 +2,7 @@
 
 pkgname=gxde-ai-core-git
 pkgver=1.0.0
-pkgrel=1
+pkgrel=2
 pkgdesc='GXDE AI backend based on Google Gemini CLI & CharOfString Hachimi CLI'
 arch=('x86_64' 'aarch64')
 url='https://github.com/CharOfString/hachimi'
