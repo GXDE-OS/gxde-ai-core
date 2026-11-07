@@ -1,3 +1,9 @@
+gxde-ai-core (1.0.0-beta3) unstable; urgency=medium
+
+  * Fixed the issue that the streamed thinking is full of "***".
+
+ -- CharOfString <root@charofstring.cc>  Sat, 07 Nov 2026 13:03:39 -0600
+
 gxde-ai-core (1.0.0-beta2) unstable; urgency=medium
 
   * Fixed the issue that some OAI-compatible providers may send NULL instead of omitting the fields on continuation deltas.
