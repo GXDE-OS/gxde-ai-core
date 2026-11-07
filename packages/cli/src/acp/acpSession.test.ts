@@ -386,6 +386,29 @@ describe('Session', () => {
     });
   });
 
+  it('should forward streamed reasoning deltas unchanged', async () => {
+    const stream = createMockStream([
+      {
+        type: GeminiEventType.Thought,
+        value: { subject: '', description: 'user', text: ' user' },
+      },
+    ]);
+    mockSendMessageStream.mockReturnValue(stream);
+
+    await session.prompt({
+      sessionId: 'session-1',
+      prompt: [{ type: 'text', text: 'Hi' }],
+    });
+
+    expect(mockConnection.sessionUpdate).toHaveBeenCalledWith({
+      sessionId: 'session-1',
+      update: {
+        sessionUpdate: 'agent_thought_chunk',
+        content: { type: 'text', text: ' user' },
+      },
+    });
+  });
+
   it('should pass current session information directly onto geminiClient.sendMessageStream', async () => {
     const stream = createMockStream([
       {

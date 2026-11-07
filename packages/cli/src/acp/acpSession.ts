@@ -1,12 +1,14 @@
 /**
  * @license
  * Copyright 2026 Google LLC
+ * Modifications Copyright 2026 CharOfString <root@charofstring.cc>
  * SPDX-License-Identifier: Apache-2.0
  */
 
 import {
   type ApprovalMode,
   type ConversationRecord,
+  type ThoughtSummary,
   CoreToolCallStatus,
   coreEvents,
   CoreEvent,
@@ -67,6 +69,11 @@ const StructuredErrorSchema = z.object({
 });
 
 const CHAT_MODE_ID = 'chat';
+
+// Handle streamed thinking for GXDE AI See
+function thoughtChunk(thought: ThoughtSummary): string {
+  return thought.text ?? `**${thought.subject}**\n${thought.description}`;
+}
 
 export class Session {
   private pendingPrompt: AbortController | null = null;
@@ -328,7 +335,7 @@ export class Session {
         // Thoughts
         if (msg.thoughts) {
           for (const thought of msg.thoughts) {
-            const thoughtText = `**${thought.subject}**\n${thought.description}`;
+            const thoughtText = thoughtChunk(thought);
             await this.sendUpdate({
               sessionUpdate: 'agent_thought_chunk',
               content: { type: 'text', text: thoughtText },
@@ -527,7 +534,7 @@ export class Session {
             }
 
             case GeminiEventType.Thought: {
-              const thoughtText = `**${event.value.subject}**\n${event.value.description}`;
+              const thoughtText = thoughtChunk(event.value);
               await this.sendUpdate({
                 sessionUpdate: 'agent_thought_chunk',
                 content: { type: 'text', text: thoughtText },
