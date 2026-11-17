@@ -1,6 +1,6 @@
 # Maintainer: CharOfString <root@charofstring.cc>
 
-pkgname=gxde-ai-core-git
+pkgname=gxde-ai-core
 pkgver=1.0.0
 pkgrel=3
 pkgdesc='GXDE AI backend based on Google Gemini CLI & CharOfString Hachimi CLI'
@@ -9,6 +9,9 @@ url='https://github.com/CharOfString/hachimi'
 license=('Apache-2.0')
 depends=('glibc' 'gcc-libs' 'libsecret')
 optdepends=('git: Git integration and checkpointing')
+provides=("gxde-ai-core-git=$pkgver")
+conflicts=('gxde-ai-core-git')
+replaces=('gxde-ai-core-git')
 makedepends=('git' 'curl')
 options=('!strip' '!debug')
 
