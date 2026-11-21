@@ -1,3 +1,10 @@
+gxde-ai-core (1.0.0-beta5) unstable; urgency=medium
+
+  * 版本收尾：包含 gxde-ai-core/auth/providers/models 模型列表接口与
+    图片/音频多模态输入修复
+
+ -- shenmo <shenmo@spark-app.store>  Sat, 21 Nov 2026 17:40:00 +0800
+
 gxde-ai-core (1.0.0-beta4) unstable; urgency=medium
 
   * ACP：新增 gxde-ai-core/auth/providers/models，按账号用保存的 API Key
