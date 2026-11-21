@@ -1580,16 +1580,17 @@ export class Session {
         processedQueryParts.push({
           text: `\nContent from @${contextPart.uri}:\n`,
         });
-        if ('text' in contextPart) {
-          processedQueryParts.push({
-            text: contextPart.text,
-          });
-        } else {
+        if ('blob' in contextPart && typeof contextPart.blob === 'string') {
+          // blob 优先：客户端可能同时带上兼容用的 text 字段，不能让图片被丢掉
           processedQueryParts.push({
             inlineData: {
-              mimeType: contextPart.mimeType ?? 'application/octet-stream',
+              mimeType: contextPart.mimeType ?? 'image/png',
               data: contextPart.blob,
             },
+          });
+        } else if ('text' in contextPart) {
+          processedQueryParts.push({
+            text: contextPart.text,
           });
         }
       }

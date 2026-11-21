@@ -1,3 +1,12 @@
+gxde-ai-core (1.0.0-beta4) unstable; urgency=medium
+
+  * ACP：新增 gxde-ai-core/auth/providers/models，按账号用保存的 API Key
+    从上游（OpenAI 兼容 / Anthropic / Gemini）拉取模型列表
+  * 上下文管理：不再把图片/音频 inlineData 降级成文字，多模态内容会真正
+    传到模型（之前图片会被 BlobDegradation 换成一句"已降级"路径）
+
+ -- shenmo <shenmo@spark-app.store>  Sat, 21 Nov 2026 17:20:00 +0800
+
 gxde-ai-core (1.0.0-beta3) unstable; urgency=medium
 
   * Fixed the issue that the streamed thinking is full of "***".

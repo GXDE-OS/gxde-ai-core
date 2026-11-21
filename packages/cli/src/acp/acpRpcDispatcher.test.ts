@@ -176,6 +176,7 @@ describe('GeminiAgent - RPC Dispatcher', () => {
             'gxde-ai-core/auth/providers/save',
             'gxde-ai-core/auth/providers/delete',
             'gxde-ai-core/auth/providers/activate',
+            'gxde-ai-core/auth/providers/models',
           ],
         },
         sessions: {

@@ -60,6 +60,16 @@ export function createBlobDegradationProcessor(
         let tokensSaved = 0;
 
         if (payload.inlineData?.data && payload.inlineData?.mimeType) {
+          // 图片/音频是模型真正要"看/听"的输入：它们不占文本上下文预算，
+          // 降级成文字会把多模态内容直接丢掉（模型只能看到一句"已降级"）。
+          // 文本上下文压缩交给后面的 distillation / truncation。
+          if (
+            payload.inlineData.mimeType.startsWith('image/') ||
+            payload.inlineData.mimeType.startsWith('audio/')
+          ) {
+            returnedNodes.push(node);
+            continue;
+          }
           await ensureDir();
           const ext = payload.inlineData.mimeType.split('/')[1] || 'bin';
           // Use a stable filename based on the node ID

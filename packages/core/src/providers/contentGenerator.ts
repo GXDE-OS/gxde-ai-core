@@ -22,6 +22,7 @@ import {
   type ReasoningEffort,
 } from '../core/reasoningEffort.js';
 import { isContextWindowExceededError } from '../utils/errors.js';
+import { estimateTokenCountSync } from '../utils/tokenCalculation.js';
 
 type Json = Record<string, unknown>;
 
@@ -508,11 +509,12 @@ export class ProviderContentGenerator implements ContentGenerator {
   async countTokens(
     request: CountTokensParameters,
   ): Promise<CountTokensResponse> {
-    return {
-      totalTokens: Math.ceil(
-        Buffer.byteLength(JSON.stringify(request.contents), 'utf8') / 3,
-      ),
-    };
+    // 图片的 base64 不能按字节数算 token：一张 100KB 的图会被估成几万 token，
+    // 从而误触发上下文压缩/超限。按 tokenCalculation 的媒体启发式估算。
+    const parts = contents(request.contents).flatMap(
+      (item) => item.parts ?? [],
+    );
+    return { totalTokens: estimateTokenCountSync(parts) };
   }
 
   async embedContent(): Promise<EmbedContentResponse> {

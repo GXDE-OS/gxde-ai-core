@@ -24,6 +24,7 @@ import { z } from 'zod';
 import { SettingScope, type LoadedSettings } from '../config/settings.js';
 import type { CliArgs } from '../config/config.js';
 import { getAcpErrorMessage } from './acpErrors.js';
+import { fetchProviderModels } from './providerModels.js';
 import { AcpSessionManager, type AuthDetails } from './acpSessionManager.js';
 
 // Make the A.C.P able to control the auth providers
@@ -65,6 +66,10 @@ const providerSaveParamsSchema = z.object({
 
 const providerIdSchema = z.object({
   id: z.string().uuid(),
+});
+
+const providerModelsParamsSchema = z.object({
+  accountId: z.string().uuid().optional(),
 });
 
 const providerActivateParamsSchema = z.object({
@@ -145,6 +150,7 @@ export class GeminiAgent {
                 'gxde-ai-core/auth/providers/save',
                 'gxde-ai-core/auth/providers/delete',
                 'gxde-ai-core/auth/providers/activate',
+                'gxde-ai-core/auth/providers/models',
               ],
             },
             sessions: {
@@ -214,12 +220,68 @@ export class GeminiAgent {
         return this.deleteProviderAccount(params);
       case 'gxde-ai-core/auth/providers/activate':
         return this.activateProviderAccount(params);
+      case 'gxde-ai-core/auth/providers/models':
+        return this.providerAccountModels(params);
       case 'gxde-ai-core/session/setProvider':
         return this.setSessionProvider(params);
       case 'gxde-ai-core/session/setModel':
         return this.setSessionModel(params);
       default:
         throw new acp.RequestError(-32601, `Method not found: ${method}`);
+    }
+  }
+
+  /**
+   * 用账号保存的 API Key 去供应商那边拉模型列表（GET /models）。
+   * 不落盘：客户端决定要不要写回账号的 models。
+   */
+  private async providerAccountModels(
+    params: Record<string, unknown>,
+  ): Promise<Record<string, unknown>> {
+    const parsed = providerModelsParamsSchema.safeParse(params ?? {});
+    if (!parsed.success) {
+      throw new acp.RequestError(
+        -32602,
+        `Invalid params: ${parsed.error.message}`,
+      );
+    }
+
+    const store = readAccounts();
+    const account = parsed.data.accountId
+      ? store.accounts.find((item) => item.id === parsed.data.accountId)
+      : getActiveAccount();
+    if (!account) {
+      throw new acp.RequestError(
+        -32000,
+        parsed.data.accountId
+          ? `Provider account not found: ${parsed.data.accountId}`
+          : 'No active provider account. Activate one first.',
+      );
+    }
+
+    const apiKey = await loadAccountKey(account.id);
+    if (!apiKey) {
+      throw new acp.RequestError(
+        -32000,
+        'The provider account has no API key. Save it with gxde-ai-core/auth/providers/save.',
+      );
+    }
+
+    try {
+      const ids = await fetchProviderModels(account, apiKey);
+      const configured = new Set(account.models.map((item) => item.id));
+      return {
+        accountId: account.id,
+        protocol: account.protocol,
+        baseUrl: account.baseUrl,
+        currentModel: account.model,
+        models: ids.map((id) => ({ id, configured: configured.has(id) })),
+      };
+    } catch (error) {
+      throw new acp.RequestError(
+        -32000,
+        `Cannot list models: ${getAcpErrorMessage(error)}`,
+      );
     }
   }
 
